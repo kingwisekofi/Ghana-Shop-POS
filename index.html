@@ -673,7 +673,7 @@
                     }
                     this.adminModal.authenticated = false;
                     this.adminModal.open = false;
-                    this.locked = false; // Bypasses the lock screen to preview the live app
+                    this.locked = false;
                     this.showToast('Opened Live Shop Preview', '👀');
                 },
 
@@ -701,6 +701,25 @@
                     let cleanPhone = cust.phone.replace(/\D/g, '');
                     if (cleanPhone.startsWith('0')) cleanPhone = '233' + cleanPhone.substring(1);
                     const msg = encodeURIComponent(`Hello ${cust.name}, this is a gentle reminder from *${this.shop.name}* that your outstanding credit balance is *₵${cust.debt.toFixed(2)}*. Kindly arrange payment when possible. Thank you!`);
+                    window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
+                },
+
+                sendReceiptWhatsApp(cartSnapshot, totalAmt, paymentType) {
+                    const phoneInput = prompt('Enter customer phone number to send WhatsApp receipt (Optional):', '');
+                    if (!phoneInput) return;
+                    let cleanPhone = phoneInput.replace(/\D/g, '');
+                    if (cleanPhone.startsWith('0')) cleanPhone = '233' + cleanPhone.substring(1);
+
+                    let itemsText = cartSnapshot.map(i => `• ${i.qty}x ${i.name} (₵${(i.price * i.qty).toFixed(2)})`).join('\n');
+                    const msg = encodeURIComponent(
+                        `🧾 *RECEIPT: ${this.shop.name}*\n` +
+                        `📍 ${this.shop.location}\n` +
+                        `--------------------------------\n` +
+                        `${itemsText}\n` +
+                        `--------------------------------\n` +
+                        `*TOTAL PAID: ₵${totalAmt.toFixed(2)} (${paymentType})*\n` +
+                        `Thank you for shopping with us! 🙏`
+                    );
                     window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
                 },
 
@@ -773,17 +792,23 @@
                     if (this.cart.length === 0) return;
                     this.rollDay();
                     const total = this.cartTotal;
+                    const cartSnapshot = [...this.cart];
                     if (type === 'CASH') this.dailyTotals.cash += total;
                     if (type === 'MOMO') this.dailyTotals.momo += total;
                     this.cart.forEach(ci => { const p = this.products.find(x => x.id === ci.id); if (p) p.stock -= ci.qty; });
                     
                     this.transactions.unshift({
-                        type: `${type} PAYMENT`, amount: total, details: this.cart.map(i => `${i.qty}x ${i.name}`).join(', '),
+                        type: `${type} PAYMENT`, amount: total, details: cartSnapshot.map(i => `${i.qty}x ${i.name}`).join(', '),
                         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: this.todayKey()
                     });
                     this.save('ghana_shop_products', this.products); this.save('ghana_shop_txns', this.transactions); this.save('ghana_shop_totals', this.dailyTotals);
                     this.cart = [];
                     this.showToast(`Sale recorded! (${type})`, '✅');
+
+                    // Prompt to send WhatsApp receipt
+                    if (confirm('Send digital receipt to customer via WhatsApp?')) {
+                        this.sendReceiptWhatsApp(cartSnapshot, total, type);
+                    }
                 },
 
                 openCreditModal() { if (this.cart.length > 0) this.creditModal.open = true; },
