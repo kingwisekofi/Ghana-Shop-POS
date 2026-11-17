@@ -319,7 +319,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <div>
                         <h2 class="font-extrabold text-slate-800 text-lg">Inventory & Stock Alerts</h2>
-                        <p class="text-xs text-slate-500">Manage prices and filter out-of-stock or low-stock items.</p>
+                        <p class="text-xs text-slate-500">Manage cost prices, selling prices, and stock levels.</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <button @click="inventoryFilter = inventoryFilter === 'LOW' ? 'ALL' : 'LOW'" 
@@ -336,7 +336,13 @@
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
                                 <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
-                                    <th class="p-3">Icon</th><th class="p-3">Item Name</th><th class="p-3">Unit</th><th class="p-3">Price (GHS)</th><th class="p-3">Stock Left</th><th class="p-3 text-right">Actions</th>
+                                    <th class="p-3">Icon</th>
+                                    <th class="p-3">Item Name</th>
+                                    <th class="p-3">Unit</th>
+                                    <th class="p-3">Cost Price (₵)</th>
+                                    <th class="p-3">Selling Price (₵)</th>
+                                    <th class="p-3">Stock Left</th>
+                                    <th class="p-3 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -345,6 +351,7 @@
                                         <td class="p-3 text-2xl" x-text="item.icon"></td>
                                         <td class="p-3 font-bold text-slate-800" x-text="item.name"></td>
                                         <td class="p-3 text-slate-500" x-text="item.unit"></td>
+                                        <td class="p-3"><div class="flex items-center space-x-1"><span class="font-bold text-slate-600">₵</span><input type="number" step="0.50" min="0" x-model.number="item.costPrice" @change="saveInventory()" class="w-20 px-2 py-1 rounded-lg border font-semibold text-slate-600"></div></td>
                                         <td class="p-3"><div class="flex items-center space-x-1"><span class="font-bold text-slate-600">₵</span><input type="number" step="0.50" min="0" x-model.number="item.price" @change="saveInventory()" class="w-20 px-2 py-1 rounded-lg border font-extrabold text-emerald-800"></div></td>
                                         <td class="p-3"><input type="number" min="0" x-model.number="item.stock" @change="saveInventory()" class="w-16 px-2 py-1 rounded-lg border font-bold"></td>
                                         <td class="p-3 text-right space-x-2">
@@ -407,16 +414,16 @@
             </div>
         </section>
 
-        <!-- TAB: SALES REPORTS & PAST INVENTORY -->
+        <!-- TAB: SALES REPORTS, BACK DATES & PROFIT TRACKER -->
         <section x-show="currentTab === 'reports'" class="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto bg-slate-50">
             <div class="max-w-4xl mx-auto w-full space-y-6">
                 <div class="bg-emerald-800 text-white p-6 rounded-3xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div class="space-y-1">
                         <div class="flex items-center space-x-2">
                             <span class="text-2xl">📈</span>
-                            <h2 class="text-xl font-extrabold">Sales Reports & Past Inventory</h2>
+                            <h2 class="text-xl font-extrabold">Sales Reports & Profit Tracker</h2>
                         </div>
-                        <p class="text-xs text-emerald-200">Reconcile cash drawer, check past stock logs, and export data.</p>
+                        <p class="text-xs text-emerald-200">Track profits, sales, and past dates effortlessly.</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <button @click="openExpenseModal()" class="bg-amber-500 hover:bg-amber-600 text-white font-extrabold px-3 py-2.5 rounded-xl text-xs shadow transition">+ Log Expense 💸</button>
@@ -424,27 +431,47 @@
                     </div>
                 </div>
 
-                <!-- Summary Metric Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                <!-- Back-Date Selector Bar -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-lg">📅</span>
+                        <div>
+                            <h3 class="font-extrabold text-slate-800 text-xs uppercase">Select Date to View Reports & Profit:</h3>
+                            <p class="text-[10px] text-slate-400">View sales, profits and drawer status for any previous day.</p>
+                        </div>
+                    </div>
+                    <select x-model="selectedReportDate" class="px-4 py-2 rounded-xl border text-xs bg-emerald-50 font-bold text-emerald-900 focus:outline-none">
+                        <template x-for="dateKey in allRecordedDates" :key="dateKey">
+                            <option :value="dateKey" x-text="dateKey === todayKey() ? 'Today (' + dateKey + ')' : dateKey"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Summary Metric Cards for Selected Date (Including Profit) -->
+                <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
                     <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-1">
                         <p class="text-[10px] text-slate-400 font-bold uppercase">Cash Sales</p>
-                        <p class="text-lg font-extrabold text-emerald-700">₵<span x-text="dailyTotals.cash.toFixed(2)"></span></p>
+                        <p class="text-base font-extrabold text-emerald-700">₵<span x-text="selectedDateTotals.cash.toFixed(2)"></span></p>
                     </div>
                     <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-1">
                         <p class="text-[10px] text-slate-400 font-bold uppercase">MoMo Sales</p>
-                        <p class="text-lg font-extrabold text-amber-600">₵<span x-text="dailyTotals.momo.toFixed(2)"></span></p>
+                        <p class="text-base font-extrabold text-amber-600">₵<span x-text="selectedDateTotals.momo.toFixed(2)"></span></p>
                     </div>
                     <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-1">
                         <p class="text-[10px] text-slate-400 font-bold uppercase">Expenses Paid</p>
-                        <p class="text-lg font-extrabold text-red-600">₵<span x-text="dailyTotals.expenses.toFixed(2)"></span></p>
+                        <p class="text-base font-extrabold text-red-600">₵<span x-text="selectedDateTotals.expenses.toFixed(2)"></span></p>
                     </div>
                     <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-1">
                         <p class="text-[10px] text-slate-400 font-bold uppercase">Credit Issued</p>
-                        <p class="text-lg font-extrabold text-blue-600">₵<span x-text="dailyTotals.credit.toFixed(2)"></span></p>
+                        <p class="text-base font-extrabold text-blue-600">₵<span x-text="selectedDateTotals.credit.toFixed(2)"></span></p>
                     </div>
                     <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 shadow-sm space-y-1">
-                        <p class="text-[10px] text-emerald-800 font-bold uppercase">Expected Drawer Cash</p>
-                        <p class="text-lg font-extrabold text-emerald-900">₵<span x-text="(dailyTotals.cash - dailyTotals.expenses).toFixed(2)"></span></p>
+                        <p class="text-[10px] text-emerald-800 font-bold uppercase">Drawer Cash</p>
+                        <p class="text-base font-extrabold text-emerald-900">₵<span x-text="(selectedDateTotals.cash - selectedDateTotals.expenses).toFixed(2)"></span></p>
+                    </div>
+                    <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-200 shadow-sm space-y-1 col-span-2 sm:col-span-1">
+                        <p class="text-[10px] text-indigo-800 font-bold uppercase">Total Profit 🎯</p>
+                        <p class="text-base font-extrabold text-indigo-900">₵<span x-text="selectedDateTotals.profit.toFixed(2)"></span></p>
                     </div>
                 </div>
 
@@ -453,14 +480,7 @@
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
                         <div>
                             <h3 class="font-extrabold text-slate-800 text-sm">📦 Historical Inventory Log (Past Days Stock)</h3>
-                            <p class="text-[11px] text-slate-500">Select a past date to check closing stock levels.</p>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <select x-model="selectedHistoryDate" class="px-3 py-1.5 rounded-xl border text-xs bg-slate-50 font-semibold focus:outline-none">
-                                <template x-for="dateKey in Object.keys(inventorySnapshots).sort().reverse()" :key="dateKey">
-                                    <option :value="dateKey" x-text="dateKey"></option>
-                                </template>
-                            </select>
+                            <p class="text-[11px] text-slate-500">Closing stock levels for the selected date.</p>
                         </div>
                     </div>
 
@@ -470,7 +490,8 @@
                                 <tr class="text-slate-500 border-b pb-2">
                                     <th class="pb-2">Item Name</th>
                                     <th class="pb-2">Unit</th>
-                                    <th class="pb-2">Recorded Price</th>
+                                    <th class="pb-2">Cost Price</th>
+                                    <th class="pb-2">Selling Price</th>
                                     <th class="pb-2 text-right">Stock on Date</th>
                                 </tr>
                             </thead>
@@ -479,6 +500,7 @@
                                     <tr>
                                         <td class="py-2 font-bold text-slate-800" x-text="item.name"></td>
                                         <td class="py-2 text-slate-500" x-text="item.unit"></td>
+                                        <td class="py-2 text-slate-600">₵<span x-text="(item.costPrice || 0).toFixed(2)"></span></td>
                                         <td class="py-2 text-emerald-700 font-semibold">₵<span x-text="item.price.toFixed(2)"></span></td>
                                         <td class="py-2 text-right font-extrabold" x-text="item.stock"></td>
                                     </tr>
@@ -489,29 +511,19 @@
                     </div>
                 </div>
 
-                <!-- Filterable Transaction Log -->
+                <!-- Transaction Log for Selected Date -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <h3 class="font-extrabold text-slate-800 text-sm">Full Transaction & Expense History</h3>
-                        <div class="flex items-center space-x-2 w-full sm:w-auto">
-                            <span class="text-xs text-slate-500 font-bold">Filter:</span>
-                            <select x-model="reportFilter" class="px-3 py-1.5 rounded-xl border text-xs bg-slate-50 font-semibold focus:outline-none">
-                                <option value="ALL">All Entries</option>
-                                <option value="TODAY">Today Only</option>
-                                <option value="CASH">Cash Only</option>
-                                <option value="MOMO">MoMo Only</option>
-                                <option value="EXPENSE">Expenses Only</option>
-                                <option value="CREDIT">Credit Book Only</option>
-                            </select>
-                        </div>
+                        <h3 class="font-extrabold text-slate-800 text-sm" x-text="'Transactions on ' + selectedReportDate"></h3>
                     </div>
 
                     <div class="divide-y divide-slate-100 max-h-80 overflow-y-auto text-xs space-y-2">
-                        <template x-for="txn in filteredTransactions">
+                        <template x-for="txn in filteredTransactionsForDate">
                             <div class="flex items-center justify-between py-3">
                                 <div>
                                     <p class="font-bold text-slate-800" x-text="txn.type + ' • ₵' + txn.amount.toFixed(2)"></p>
                                     <p class="text-[11px] text-slate-500" x-text="txn.details"></p>
+                                    <p x-show="txn.profit > 0" class="text-[10px] text-indigo-700 font-bold">Profit earned: ₵<span x-text="txn.profit.toFixed(2)"></span></p>
                                 </div>
                                 <div class="text-right">
                                     <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full" x-text="txn.date"></span>
@@ -519,7 +531,7 @@
                                 </div>
                             </div>
                         </template>
-                        <div x-show="filteredTransactions.length === 0" class="text-center py-10 text-slate-400">No matching entries found.</div>
+                        <div x-show="filteredTransactionsForDate.length === 0" class="text-center py-10 text-slate-400">No transactions recorded for this date.</div>
                     </div>
                 </div>
             </div>
@@ -545,13 +557,17 @@
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Price (₵)</label>
-                        <input type="number" step="0.50" min="0" x-model.number="productModal.form.price" required class="w-full px-3 py-2 rounded-xl border text-xs font-bold">
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Cost Price (₵)</label>
+                        <input type="number" step="0.50" min="0" x-model.number="productModal.form.costPrice" required class="w-full px-3 py-2 rounded-xl border text-xs font-semibold">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Stock</label>
-                        <input type="number" min="0" step="1" x-model.number="productModal.form.stock" required class="w-full px-3 py-2 rounded-xl border text-xs font-bold">
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Selling Price (₵)</label>
+                        <input type="number" step="0.50" min="0" x-model.number="productModal.form.price" required class="w-full px-3 py-2 rounded-xl border text-xs font-bold">
                     </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Stock Quantity</label>
+                    <input type="number" min="0" step="1" x-model.number="productModal.form.stock" required class="w-full px-3 py-2 rounded-xl border text-xs font-bold">
                 </div>
                 <div class="flex items-center space-x-2 pt-2">
                     <button type="button" @click="productModal.open = false" class="flex-1 bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs">Cancel</button>
@@ -607,10 +623,9 @@
             return {
                 currentTab: 'sales',
                 searchQuery: '',
-                reportFilter: 'ALL',
                 inventoryFilter: 'ALL',
                 customerPhone: '',
-                selectedHistoryDate: '',
+                selectedReportDate: '',
                 toast: { show: false, message: '', icon: '✅' },
                 
                 shop: { name: '', location: '', owner: '', setupCompleted: false },
@@ -624,20 +639,20 @@
                 expenseModal: { open: false, form: { desc: '', amount: 0 } },
 
                 products: [
-                    { id: 1, name: 'Ideal Milk Tin', unit: 'Tin', price: 12.00, stock: 4, icon: '🥛' },
-                    { id: 2, name: 'Milo Refill Sachet', unit: 'Sachet', price: 3.50, stock: 90, icon: '🍫' },
-                    { id: 3, name: 'Geisha Mackerel', unit: 'Tin', price: 18.00, stock: 3, icon: '🐟' },
-                    { id: 4, name: 'Key Soap Large', unit: 'Bar', price: 10.00, stock: 35, icon: '🧼' }
+                    { id: 1, name: 'Ideal Milk Tin', unit: 'Tin', costPrice: 10.00, price: 12.00, stock: 4, icon: '🥛' },
+                    { id: 2, name: 'Milo Refill Sachet', unit: 'Sachet', costPrice: 2.50, price: 3.50, stock: 90, icon: '🍫' },
+                    { id: 3, name: 'Geisha Mackerel', unit: 'Tin', costPrice: 15.00, price: 18.00, stock: 3, icon: '🐟' },
+                    { id: 4, name: 'Key Soap Large', unit: 'Bar', costPrice: 8.00, price: 10.00, stock: 35, icon: '🧼' }
                 ],
                 cart: [],
                 customers: [
                     { id: 1, name: 'Auntie Ama', phone: '0241112233', debt: 45.00, lastItems: 'Ideal Milk' }
                 ],
                 transactions: [],
-                dailyTotals: { date: '', cash: 0.00, momo: 0.00, credit: 0.00, expenses: 0.00 },
+                dailyTotals: { date: '', cash: 0.00, momo: 0.00, credit: 0.00, expenses: 0.00, profit: 0.00 },
                 inventorySnapshots: {},
 
-                productModal: { open: false, isEdit: false, form: { id: null, name: '', unit: '', price: 0, stock: 0, icon: '📦' } },
+                productModal: { open: false, isEdit: false, form: { id: null, name: '', unit: '', costPrice: 8, price: 10, stock: 20, icon: '📦' } },
                 customerModal: { open: false, form: { name: '', phone: '' } },
                 creditModal: { open: false },
 
@@ -656,8 +671,7 @@
                     }
                     this.locked = !!this.shop.passwordHash;
 
-                    const dates = Object.keys(this.inventorySnapshots).sort().reverse();
-                    if (dates.length > 0) this.selectedHistoryDate = dates[0];
+                    this.selectedReportDate = this.todayKey();
                 },
 
                 save(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
@@ -665,16 +679,15 @@
 
                 rollDay() {
                     const today = this.todayKey();
-                    // Save today's snapshot of current inventory
                     this.inventorySnapshots[today] = JSON.parse(JSON.stringify(this.products));
                     this.save('ghana_shop_inv_snapshots', this.inventorySnapshots);
 
                     if (this.dailyTotals.date !== today) {
-                        this.dailyTotals = { date: today, cash: 0, momo: 0, credit: 0, expenses: 0 };
+                        this.dailyTotals = { date: today, cash: 0, momo: 0, credit: 0, expenses: 0, profit: 0 };
                         this.save('ghana_shop_totals', this.dailyTotals);
                     }
-                    if (!this.selectedHistoryDate) {
-                        this.selectedHistoryDate = today;
+                    if (!this.selectedReportDate) {
+                        this.selectedReportDate = today;
                     }
                 },
 
@@ -689,18 +702,33 @@
                 },
                 get cartTotal() { return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); },
                 get totalDebt() { return this.customers.reduce((sum, c) => sum + c.debt, 0); },
-                get currentHistoryItems() { return this.inventorySnapshots[this.selectedHistoryDate] || []; },
+                get currentHistoryItems() { return this.inventorySnapshots[this.selectedReportDate] || []; },
 
-                get filteredTransactions() {
-                    const today = this.todayKey();
-                    return this.transactions.filter(t => {
-                        if (this.reportFilter === 'TODAY') return t.date === today;
-                        if (this.reportFilter === 'CASH') return t.type.includes('CASH');
-                        if (this.reportFilter === 'MOMO') return t.type.includes('MOMO');
-                        if (this.reportFilter === 'EXPENSE') return t.type.includes('EXPENSE');
-                        if (this.reportFilter === 'CREDIT') return t.type.includes('CREDIT');
-                        return true;
+                get allRecordedDates() {
+                    const datesSet = new Set([this.todayKey(), ...Object.keys(this.inventorySnapshots)]);
+                    this.transactions.forEach(t => { if (t.date) datesSet.add(t.date); });
+                    return Array.from(datesSet).sort().reverse();
+                },
+
+                get selectedDateTotals() {
+                    const targetDate = this.selectedReportDate || this.todayKey();
+                    const dayTxns = this.transactions.filter(t => t.date === targetDate);
+                    let cash = 0, momo = 0, credit = 0, expenses = 0, profit = 0;
+                    
+                    dayTxns.forEach(t => {
+                        if (t.type.includes('CASH PAYMENT') || t.type.includes('DEBT PAYMENT')) cash += t.amount;
+                        else if (t.type.includes('MOMO PAYMENT')) momo += t.amount;
+                        else if (t.type.includes('CREDIT BOOK')) credit += t.amount;
+                        else if (t.type.includes('CASH EXPENSE')) expenses += t.amount;
+                        
+                        if (t.profit) profit += t.profit;
                     });
+                    return { cash, momo, credit, expenses, profit };
+                },
+
+                get filteredTransactionsForDate() {
+                    const targetDate = this.selectedReportDate || this.todayKey();
+                    return this.transactions.filter(t => t.date === targetDate);
                 },
 
                 newSalt() { return btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))); },
@@ -748,7 +776,7 @@
                     if (!f.desc || f.amount <= 0) return;
                     this.dailyTotals.expenses += f.amount;
                     this.transactions.unshift({
-                        type: 'CASH EXPENSE', amount: f.amount, details: f.desc,
+                        type: 'CASH EXPENSE', amount: f.amount, profit: 0, details: f.desc,
                         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: this.todayKey()
                     });
                     this.save('ghana_shop_txns', this.transactions);
@@ -802,9 +830,9 @@
                 },
 
                 exportReportCSV() {
-                    let csv = 'Type,Amount (GHS),Details,Date,Time\n';
+                    let csv = 'Type,Amount (GHS),Profit (GHS),Details,Date,Time\n';
                     this.transactions.forEach(t => {
-                        csv += `"${t.type}",${t.amount},"${t.details}","${t.date}","${t.time}"\n`;
+                        csv += `"${t.type}",${t.amount},${t.profit || 0},"${t.details}","${t.date}","${t.time}"\n`;
                     });
                     const blob = new Blob([csv], { type: 'text/csv' });
                     const url = URL.createObjectURL(blob);
@@ -844,7 +872,7 @@
                 openSetup() { this.shop.setupCompleted = false; },
                 saveInventory() { 
                     this.save('ghana_shop_products', this.products); 
-                    this.rollDay(); // Update today's snapshot
+                    this.rollDay();
                     this.showToast('Inventory saved', '💾'); 
                 },
 
@@ -862,22 +890,33 @@
                     if (this.cart.length === 0) return;
                     this.rollDay();
                     const total = this.cartTotal;
+                    
+                    // Calculate profit for this cart
+                    let totalProfit = 0;
+                    this.cart.forEach(ci => {
+                        const originalProd = this.products.find(p => p.id === ci.id);
+                        const cost = originalProd ? (originalProd.costPrice || 0) : 0;
+                        const profitPerUnit = ci.price - cost;
+                        totalProfit += profitPerUnit * ci.qty;
+                    });
+
                     const cartSnapshot = [...this.cart];
                     const phoneSnapshot = this.customerPhone;
                     if (type === 'CASH') this.dailyTotals.cash += total;
                     if (type === 'MOMO') this.dailyTotals.momo += total;
+                    this.dailyTotals.profit = (this.dailyTotals.profit || 0) + totalProfit;
+
                     this.cart.forEach(ci => { const p = this.products.find(x => x.id === ci.id); if (p) p.stock -= ci.qty; });
                     
-                    // Update snapshot for today
                     this.rollDay();
 
                     this.transactions.unshift({
-                        type: `${type} PAYMENT`, amount: total, details: cartSnapshot.map(i => `${i.qty}x ${i.name}`).join(', '),
+                        type: `${type} PAYMENT`, amount: total, profit: totalProfit, details: cartSnapshot.map(i => `${i.qty}x ${i.name}`).join(', '),
                         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: this.todayKey()
                     });
                     this.save('ghana_shop_products', this.products); this.save('ghana_shop_txns', this.transactions); this.save('ghana_shop_totals', this.dailyTotals);
                     this.cart = [];
-                    this.showToast(`Sale recorded! (${type})`, '✅');
+                    this.showToast(`Sale recorded! Profit: ₵${totalProfit.toFixed(2)}`, '✅');
 
                     if (phoneSnapshot) {
                         this.customerPhone = phoneSnapshot;
@@ -889,15 +928,25 @@
                 confirmCreditCheckout(cust) {
                     this.rollDay();
                     const total = this.cartTotal;
+                    
+                    let totalProfit = 0;
+                    this.cart.forEach(ci => {
+                        const originalProd = this.products.find(p => p.id === ci.id);
+                        const cost = originalProd ? (originalProd.costPrice || 0) : 0;
+                        totalProfit += (ci.price - cost) * ci.qty;
+                    });
+
                     cust.debt += total;
                     cust.lastItems = this.cart.map(i => i.name).join(', ');
                     this.dailyTotals.credit += total;
+                    this.dailyTotals.profit = (this.dailyTotals.profit || 0) + totalProfit;
+
                     this.cart.forEach(ci => { const p = this.products.find(x => x.id === ci.id); if (p) p.stock -= ci.qty; });
                     
                     this.rollDay();
 
                     this.transactions.unshift({
-                        type: `CREDIT BOOK (${cust.name})`, amount: total, details: cust.lastItems,
+                        type: `CREDIT BOOK (${cust.name})`, amount: total, profit: totalProfit, details: cust.lastItems,
                         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: this.todayKey()
                     });
                     this.save('ghana_shop_products', this.products); this.save('ghana_shop_customers', this.customers);
@@ -913,7 +962,7 @@
                         cust.debt = Math.max(0, cust.debt - paid);
                         this.dailyTotals.cash += paid;
                         this.transactions.unshift({
-                            type: `DEBT PAYMENT (${cust.name})`, amount: paid, details: 'Settling credit ledger',
+                            type: `DEBT PAYMENT (${cust.name})`, amount: paid, profit: 0, details: 'Settling credit ledger',
                             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: this.todayKey()
                         });
                         this.save('ghana_shop_customers', this.customers); this.save('ghana_shop_txns', this.transactions); this.save('ghana_shop_totals', this.dailyTotals);
@@ -921,7 +970,7 @@
                     }
                 },
 
-                openAddProductModal() { this.productModal.isEdit = false; this.productModal.form = { id: Date.now(), name: '', unit: 'Tin', price: 10, stock: 20, icon: '📦' }; this.productModal.open = true; },
+                openAddProductModal() { this.productModal.isEdit = false; this.productModal.form = { id: Date.now(), name: '', unit: 'Tin', costPrice: 8.00, price: 10.00, stock: 20, icon: '📦' }; this.productModal.open = true; },
                 editProduct(item) { this.productModal.isEdit = true; this.productModal.form = { ...item }; this.productModal.open = true; },
                 saveProduct() {
                     const f = this.productModal.form;
