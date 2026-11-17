@@ -24,8 +24,8 @@
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 border border-emerald-100">
             <div class="text-center space-y-2">
                 <div class="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-inner">🏪</div>
-                <h2 class="text-2xl font-extrabold text-emerald-900">Welcome to Ghana Provision POS</h2>
-                <p class="text-xs text-slate-500">Set up your shop name and details to get started instantly on your phone or computer.</p>
+                <h2 class="text-2xl font-extrabold text-emerald-900">Ghana Provision POS Setup</h2>
+                <p class="text-xs text-slate-500">Configure your shop details to get started instantly.</p>
             </div>
             
             <form @submit.prevent="completeSetup" class="space-y-4">
@@ -53,13 +53,11 @@
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Confirm Password</label>
                     <input type="password" x-model="setupForm.confirm" autocomplete="new-password" :required="!shop.passwordHash" minlength="4" placeholder="Type the password again"
                            class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm">
-                    <p class="text-[11px] text-slate-500 mt-1">You will need this password every time you open the shop. Write it down somewhere safe.</p>
                 </div>
                 <p x-show="setupError" x-text="setupError" class="text-xs font-bold text-red-600"></p>
                 <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold py-3.5 rounded-2xl shadow-lg transition text-base">
                     Start Selling 🚀
                 </button>
-                <button type="button" x-show="setupBackup" @click="cancelSetup()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-2xl text-sm transition">Cancel</button>
             </form>
         </div>
     </div>
@@ -70,7 +68,7 @@
             <div class="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center text-3xl mx-auto">🔒</div>
             <div>
                 <h2 class="text-xl font-extrabold text-emerald-900" x-text="shop.name"></h2>
-                <p class="text-xs text-slate-500">Enter your shop password to continue.</p>
+                <p class="text-xs text-slate-500">Enter shop password to continue.</p>
             </div>
             <form @submit.prevent="unlock()" class="space-y-3">
                 <input type="password" x-ref="lockInput" x-model="lockInput" autocomplete="current-password" placeholder="Password"
@@ -78,7 +76,56 @@
                 <p x-show="lockError" x-text="lockError" class="text-xs font-bold text-red-600"></p>
                 <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold py-3 rounded-2xl shadow transition text-sm">Open Shop</button>
             </form>
-            <button @click="resetDevice()" class="text-[11px] text-slate-400 hover:text-slate-600 underline">Forgot password?</button>
+            <div class="flex justify-between items-center text-[11px] text-slate-400 pt-2">
+                <button @click="resetDevice()" class="hover:text-red-600 underline">Reset Device</button>
+                <button @click="openAdminLogin()" class="hover:text-emerald-700 font-bold">Admin Portal ⚙️</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN LOGIN MODAL -->
+    <div x-show="adminModal.open" x-cloak class="fixed inset-0 z-[70] bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-extrabold text-slate-800 text-base">Master Admin Portal</h3>
+                <button @click="adminModal.open = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+            <p class="text-xs text-slate-500">Enter developer master password to access administrative controls.</p>
+            <form @submit.prevent="verifyAdmin()" class="space-y-3">
+                <input type="password" x-model="adminModal.input" placeholder="Admin Passcode"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm text-center font-semibold">
+                <p x-show="adminModal.error" x-text="adminModal.error" class="text-xs font-bold text-red-600"></p>
+                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-extrabold py-3 rounded-2xl shadow transition text-sm">Authenticate Admin</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD PANEL -->
+    <div x-show="adminModal.authenticated" x-cloak class="fixed inset-0 z-[80] bg-slate-900/90 flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b pb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🛡️</span>
+                    <h3 class="font-extrabold text-slate-800 text-lg">Master Admin Dashboard</h3>
+                </div>
+                <button @click="adminModal.authenticated = false; adminModal.open = false;" class="bg-slate-200 hover:bg-slate-300 px-3 py-1 rounded-xl text-xs font-bold">Close</button>
+            </div>
+            <div class="space-y-4 text-xs">
+                <div class="bg-slate-50 p-4 rounded-2xl border space-y-2">
+                    <h4 class="font-bold text-slate-700 uppercase">Active Shop Diagnostics</h4>
+                    <p><strong>Shop Name:</strong> <span x-text="shop.name || 'Not Set'"></span></p>
+                    <p><strong>Location:</strong> <span x-text="shop.location || 'Not Set'"></span></p>
+                    <p><strong>Owner:</strong> <span x-text="shop.owner || 'Not Set'"></span></p>
+                </div>
+                <div class="space-y-2">
+                    <h4 class="font-bold text-slate-700 uppercase">Admin Quick Actions</h4>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button @click="exportData()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold p-3 rounded-xl">💾 Export Full Shop JSON</button>
+                        <button @click="$refs.restoreFile.click()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold p-3 rounded-xl">📂 Force Restore Data</button>
+                    </div>
+                    <button @click="resetDevice()" class="w-full bg-red-100 text-red-700 hover:bg-red-200 font-bold p-3 rounded-xl">⚠️ Wipe Device & Re-register Shop</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -92,7 +139,6 @@
                     <p class="text-[11px] text-emerald-300" x-text="shop.location + ' • Keeper: ' + shop.owner"></p>
                 </div>
             </div>
-            <!-- Quick Settings Button -->
             <div class="flex items-center space-x-1.5">
                 <button x-show="shop.passwordHash" @click="lock()" class="text-xs bg-emerald-800 hover:bg-emerald-700 px-2.5 py-1 rounded-lg text-emerald-200 transition">🔒 Lock</button>
                 <button @click="exportData()" class="text-xs bg-emerald-800 hover:bg-emerald-700 px-2.5 py-1 rounded-lg text-emerald-200 transition">💾 Backup</button>
@@ -107,27 +153,23 @@
             <button @click="currentTab = 'sales'" 
                     :class="currentTab === 'sales' ? 'bg-white text-emerald-800 font-bold shadow' : 'text-white hover:bg-emerald-700'"
                     class="px-3 py-1.5 rounded-lg text-sm transition flex items-center space-x-1 whitespace-nowrap">
-                <span>📦</span>
-                <span>Sales</span>
+                <span>📦</span><span>Sales</span>
             </button>
             <button @click="currentTab = 'inventory'" 
                     :class="currentTab === 'inventory' ? 'bg-white text-emerald-800 font-bold shadow' : 'text-white hover:bg-emerald-700'"
                     class="px-3 py-1.5 rounded-lg text-sm transition flex items-center space-x-1 whitespace-nowrap">
-                <span>🏷️</span>
-                <span>Inventory & Prices</span>
+                <span>🏷️</span><span>Inventory</span>
             </button>
             <button @click="currentTab = 'credit'" 
                     :class="currentTab === 'credit' ? 'bg-white text-emerald-800 font-bold shadow' : 'text-white hover:bg-emerald-700'"
                     class="px-3 py-1.5 rounded-lg text-sm transition flex items-center space-x-1 relative whitespace-nowrap">
-                <span>📖</span>
-                <span>Credit Book</span>
+                <span>📖</span><span>Credit Book</span>
                 <span x-show="debtorsCount > 0" class="absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] font-bold px-1.5 rounded-full" x-text="debtorsCount"></span>
             </button>
-            <button @click="currentTab = 'summary'" 
-                    :class="currentTab === 'summary' ? 'bg-white text-emerald-800 font-bold shadow' : 'text-white hover:bg-emerald-700'"
+            <button @click="currentTab = 'reports'" 
+                    :class="currentTab === 'reports' ? 'bg-white text-emerald-800 font-bold shadow' : 'text-white hover:bg-emerald-700'"
                     class="px-3 py-1.5 rounded-lg text-sm transition flex items-center space-x-1 whitespace-nowrap">
-                <span>📊</span>
-                <span>Daily Totals</span>
+                <span>📈</span><span>Sales Reports</span>
             </button>
         </div>
     </header>
@@ -144,23 +186,19 @@
 
         <!-- TAB: SALES CASHIER -->
         <section x-show="currentTab === 'sales'" class="flex-1 flex flex-col md:flex-row h-full overflow-hidden">
-            <!-- Left Grid: Products -->
             <div class="flex-1 p-4 md:p-6 overflow-y-auto flex flex-col space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
                     <div>
                         <h2 class="font-extrabold text-slate-800 text-base">Quick Sales Counter</h2>
-                        <p class="text-xs text-slate-500">Tap items below to add to customer basket instantly.</p>
+                        <p class="text-xs text-slate-500">Tap items below to add to basket.</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <input type="text" x-model="searchQuery" placeholder="Search item..." 
                                class="px-3 py-2 rounded-xl border border-slate-300 text-xs w-full sm:w-48 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        <button @click="openAddProductModal()" class="bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-800 transition whitespace-nowrap shadow-sm">
-                            + Add Item
-                        </button>
+                        <button @click="openAddProductModal()" class="bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-800 transition whitespace-nowrap shadow-sm">+ Add Item</button>
                     </div>
                 </div>
 
-                <!-- Product Grid -->
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     <template x-for="item in filteredProducts" :key="item.id">
                         <button @click="addToCart(item)" 
@@ -181,7 +219,7 @@
                 </div>
             </div>
 
-            <!-- Right Panel: Cart & Checkout -->
+            <!-- Cart Panel -->
             <div class="w-full md:w-96 bg-white border-l border-slate-200 flex flex-col h-full shadow-lg">
                 <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                     <div class="flex items-center space-x-2">
@@ -191,7 +229,6 @@
                     <button x-show="cart.length > 0" @click="clearCart()" class="text-xs text-red-600 font-semibold hover:underline">Clear</button>
                 </div>
 
-                <!-- Cart Items List -->
                 <div class="flex-1 overflow-y-auto p-4 space-y-3">
                     <template x-for="(cartItem, index) in cart" :key="cartItem.id">
                         <div class="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
@@ -211,11 +248,10 @@
                     </template>
                     <div x-show="cart.length === 0" class="text-center py-16 space-y-2">
                         <span class="text-4xl">🧾</span>
-                        <p class="text-xs text-slate-400">Basket is empty.<br>Tap items on the left to add.</p>
+                        <p class="text-xs text-slate-400">Basket is empty.</p>
                     </div>
                 </div>
 
-                <!-- Checkout Footer -->
                 <div class="p-4 border-t border-slate-200 bg-slate-50 space-y-3">
                     <div class="flex items-center justify-between text-sm">
                         <span class="font-bold text-slate-600">Total Amount:</span>
@@ -223,37 +259,23 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
-                        <button @click="checkout('CASH')" :disabled="cart.length === 0" 
-                                class="bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white font-extrabold py-3 rounded-xl text-xs transition shadow flex items-center justify-center space-x-1">
-                            <span>💵</span>
-                            <span>CASH PAID</span>
-                        </button>
-                        <button @click="checkout('MOMO')" :disabled="cart.length === 0" 
-                                class="bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-extrabold py-3 rounded-xl text-xs transition shadow flex items-center justify-center space-x-1">
-                            <span>📱</span>
-                            <span>MoMo PAID</span>
-                        </button>
+                        <button @click="checkout('CASH')" :disabled="cart.length === 0" class="bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white font-extrabold py-3 rounded-xl text-xs transition shadow flex items-center justify-center space-x-1"><span>💵</span><span>CASH PAID</span></button>
+                        <button @click="checkout('MOMO')" :disabled="cart.length === 0" class="bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-extrabold py-3 rounded-xl text-xs transition shadow flex items-center justify-center space-x-1"><span>📱</span><span>MoMo PAID</span></button>
                     </div>
-                    <button @click="openCreditModal()" :disabled="cart.length === 0" 
-                            class="w-full bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1">
-                        <span>📖</span>
-                        <span>Record on Credit (Book System)</span>
-                    </button>
+                    <button @click="openCreditModal()" :disabled="cart.length === 0" class="w-full bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-1"><span>📖</span><span>Record on Credit Book</span></button>
                 </div>
             </div>
         </section>
 
-        <!-- TAB: INVENTORY & PRICES -->
+        <!-- TAB: INVENTORY -->
         <section x-show="currentTab === 'inventory'" class="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto bg-slate-50">
             <div class="max-w-4xl mx-auto w-full space-y-5">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <div>
                         <h2 class="font-extrabold text-slate-800 text-lg">Inventory & Price Control</h2>
-                        <p class="text-xs text-slate-500">Update prices instantly when wholesale market prices change (inflation adjustments).</p>
+                        <p class="text-xs text-slate-500">Update prices and stock levels instantly.</p>
                     </div>
-                    <button @click="openAddProductModal()" class="bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-800 transition shadow">
-                        + Add New Product
-                    </button>
+                    <button @click="openAddProductModal()" class="bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-800 transition shadow">+ Add New Product</button>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -261,12 +283,7 @@
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
                                 <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
-                                    <th class="p-3">Icon</th>
-                                    <th class="p-3">Item Name</th>
-                                    <th class="p-3">Unit</th>
-                                    <th class="p-3">Price (GHS)</th>
-                                    <th class="p-3">Stock Left</th>
-                                    <th class="p-3 text-right">Actions</th>
+                                    <th class="p-3">Icon</th><th class="p-3">Item Name</th><th class="p-3">Unit</th><th class="p-3">Price (GHS)</th><th class="p-3">Stock</th><th class="p-3 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
@@ -275,19 +292,10 @@
                                         <td class="p-3 text-2xl" x-text="item.icon"></td>
                                         <td class="p-3 font-bold text-slate-800" x-text="item.name"></td>
                                         <td class="p-3 text-slate-500" x-text="item.unit"></td>
-                                        <td class="p-3">
-                                            <div class="flex items-center space-x-1">
-                                                <span class="font-bold text-slate-600">₵</span>
-                                                <input type="number" step="0.50" min="0" x-model.number="item.price" @change="saveInventory()" 
-                                                       class="w-20 px-2 py-1 rounded-lg border border-slate-300 font-extrabold text-emerald-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                                            </div>
-                                        </td>
-                                        <td class="p-3">
-                                            <input type="number" min="0" x-model.number="item.stock" @change="saveInventory()" 
-                                                   class="w-16 px-2 py-1 rounded-lg border border-slate-300 font-bold text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                                        </td>
+                                        <td class="p-3"><div class="flex items-center space-x-1"><span class="font-bold text-slate-600">₵</span><input type="number" step="0.50" min="0" x-model.number="item.price" @change="saveInventory()" class="w-20 px-2 py-1 rounded-lg border font-extrabold text-emerald-800"></div></td>
+                                        <td class="p-3"><input type="number" min="0" x-model.number="item.stock" @change="saveInventory()" class="w-16 px-2 py-1 rounded-lg border font-bold"></td>
                                         <td class="p-3 text-right space-x-2">
-                                            <button @click="editProduct(item)" class="text-blue-600 hover:underline font-semibold">Full Edit</button>
+                                            <button @click="editProduct(item)" class="text-blue-600 hover:underline font-semibold">Edit</button>
                                             <button @click="deleteProduct(item.id)" class="text-red-600 hover:underline font-semibold">Delete</button>
                                         </td>
                                     </tr>
@@ -304,21 +312,18 @@
             <div class="max-w-4xl mx-auto w-full space-y-5">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <div>
-                        <h2 class="font-extrabold text-slate-800 text-lg">Customer Credit Ledger ("Book System")</h2>
-                        <p class="text-xs text-slate-500">Track neighbor debts with ease. Log payments when they settle.</p>
+                        <h2 class="font-extrabold text-slate-800 text-lg">Customer Credit Ledger</h2>
+                        <p class="text-xs text-slate-500">Track neighbor debts and settle payments.</p>
                     </div>
                     <div class="flex items-center space-x-3">
                         <div class="text-right">
                             <p class="text-[10px] text-slate-400 font-bold uppercase">Total Outstanding Debt</p>
                             <p class="text-lg font-extrabold text-red-600">₵<span x-text="totalDebt.toFixed(2)"></span></p>
                         </div>
-                        <button @click="openNewCustomerModal()" class="bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-800 transition shadow">
-                            + Add Customer
-                        </button>
+                        <button @click="openNewCustomerModal()" class="bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-800 transition shadow">+ Add Customer</button>
                     </div>
                 </div>
 
-                <!-- Customer List Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <template x-for="cust in customers" :key="cust.id">
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
@@ -327,7 +332,7 @@
                                     <div class="w-10 h-10 bg-emerald-100 text-emerald-800 font-extrabold rounded-full flex items-center justify-center text-sm" x-text="cust.name.substring(0,2).toUpperCase()"></div>
                                     <div>
                                         <h3 class="font-extrabold text-slate-800 text-sm" x-text="cust.name"></h3>
-                                        <p class="text-[11px] text-slate-500" x-text="cust.phone || 'No phone number'"></p>
+                                        <p class="text-[11px] text-slate-500" x-text="cust.phone || 'No phone'"></p>
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -335,19 +340,12 @@
                                     <p class="text-sm font-extrabold text-red-600">₵<span x-text="cust.debt.toFixed(2)"></span></p>
                                 </div>
                             </div>
-
                             <div class="bg-slate-50 p-2.5 rounded-xl text-xs space-y-1">
-                                <p class="font-semibold text-slate-600 text-[11px]">Last Items: <span class="font-normal text-slate-500" x-text="cust.lastItems || 'None recorded'"></span></p>
-                                <p class="text-[10px] text-slate-400">Date: <span x-text="cust.lastDate || 'N/A'"></span></p>
+                                <p class="font-semibold text-slate-600 text-[11px]">Last Items: <span class="font-normal text-slate-500" x-text="cust.lastItems || 'None'"></span></p>
                             </div>
-
                             <div class="flex items-center space-x-2 pt-1">
-                                <button @click="recordPayment(cust)" class="flex-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold py-2 rounded-xl text-xs transition">
-                                    Receive Payment 💸
-                                </button>
-                                <button @click="deleteCustomer(cust.id)" class="text-slate-400 hover:text-red-600 text-xs px-3 py-2 font-semibold">
-                                    Remove
-                                </button>
+                                <button @click="recordPayment(cust)" class="flex-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold py-2 rounded-xl text-xs transition">Receive Payment 💸</button>
+                                <button @click="deleteCustomer(cust.id)" class="text-slate-400 hover:text-red-600 text-xs px-3 py-2 font-semibold">Remove</button>
                             </div>
                         </div>
                     </template>
@@ -355,47 +353,70 @@
             </div>
         </section>
 
-        <!-- TAB: DAILY TOTALS -->
-        <section x-show="currentTab === 'summary'" class="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto bg-slate-50">
-            <div class="max-w-3xl mx-auto w-full space-y-6">
-                <div class="bg-emerald-800 text-white p-6 rounded-3xl shadow-lg space-y-3">
-                    <div class="flex items-center space-x-3">
-                        <span class="text-3xl">📊</span>
-                        <div>
-                            <h2 class="text-xl font-extrabold">End of Day Sales Summary</h2>
-                            <p class="text-xs text-emerald-200">Reconcile cash drawer and MoMo totals for today.</p>
+        <!-- TAB: SALES REPORTS & ANALYTICS -->
+        <section x-show="currentTab === 'reports'" class="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto bg-slate-50">
+            <div class="max-w-4xl mx-auto w-full space-y-6">
+                <div class="bg-emerald-800 text-white p-6 rounded-3xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl">📈</span>
+                            <h2 class="text-xl font-extrabold">Sales Reports & Analytics</h2>
+                        </div>
+                        <p class="text-xs text-emerald-200">Generate, view, and export store revenue reports.</p>
+                    </div>
+                    <button @click="exportReportCSV()" class="bg-white text-emerald-900 font-extrabold px-4 py-2.5 rounded-xl text-xs shadow hover:bg-emerald-50 transition">📥 Download Report (CSV)</button>
+                </div>
+
+                <!-- Summary Metric Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-1">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Today's Cash</p>
+                        <p class="text-xl font-extrabold text-emerald-700">₵<span x-text="dailyTotals.cash.toFixed(2)"></span></p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-1">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Today's MoMo</p>
+                        <p class="text-xl font-extrabold text-amber-600">₵<span x-text="dailyTotals.momo.toFixed(2)"></span></p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-1">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Today's Credit</p>
+                        <p class="text-xl font-extrabold text-blue-600">₵<span x-text="dailyTotals.credit.toFixed(2)"></span></p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-1">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Total Revenue Today</p>
+                        <p class="text-xl font-extrabold text-slate-900">₵<span x-text="(dailyTotals.cash + dailyTotals.momo).toFixed(2)"></span></p>
+                    </div>
+                </div>
+
+                <!-- Filterable Transaction Log -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <h3 class="font-extrabold text-slate-800 text-sm">Full Transaction History</h3>
+                        <div class="flex items-center space-x-2 w-full sm:w-auto">
+                            <span class="text-xs text-slate-500 font-bold">Filter:</span>
+                            <select x-model="reportFilter" class="px-3 py-1.5 rounded-xl border text-xs bg-slate-50 font-semibold focus:outline-none">
+                                <option value="ALL">All Transactions</option>
+                                <option value="TODAY">Today Only</option>
+                                <option value="CASH">Cash Only</option>
+                                <option value="MOMO">MoMo Only</option>
+                                <option value="CREDIT">Credit Book Only</option>
+                            </select>
                         </div>
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                        <p class="text-xs text-slate-400 font-bold uppercase">Total Cash Sales</p>
-                        <p class="text-2xl font-extrabold text-emerald-700">₵<span x-text="dailyTotals.cash.toFixed(2)"></span></p>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                        <p class="text-xs text-slate-400 font-bold uppercase">Total MoMo Sales</p>
-                        <p class="text-2xl font-extrabold text-amber-600">₵<span x-text="dailyTotals.momo.toFixed(2)"></span></p>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-                        <p class="text-xs text-slate-400 font-bold uppercase">Total Credit Extended</p>
-                        <p class="text-2xl font-extrabold text-blue-600">₵<span x-text="dailyTotals.credit.toFixed(2)"></span></p>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 class="font-bold text-slate-800 text-sm">Recent Transactions Log</h3>
-                    <div class="divide-y divide-slate-100 max-h-64 overflow-y-auto text-xs space-y-2">
-                        <template x-for="txn in todaysTransactions">
-                            <div class="flex items-center justify-between py-2">
+                    <div class="divide-y divide-slate-100 max-h-80 overflow-y-auto text-xs space-y-2">
+                        <template x-for="txn in filteredTransactions">
+                            <div class="flex items-center justify-between py-3">
                                 <div>
                                     <p class="font-bold text-slate-800" x-text="txn.type + ' • ₵' + txn.amount.toFixed(2)"></p>
-                                    <p class="text-[10px] text-slate-400" x-text="txn.details"></p>
+                                    <p class="text-[11px] text-slate-500" x-text="txn.details"></p>
                                 </div>
-                                <span class="text-[10px] font-semibold text-slate-500" x-text="txn.time"></span>
+                                <div class="text-right">
+                                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full" x-text="txn.date"></span>
+                                    <p class="text-[10px] text-slate-400 mt-0.5" x-text="txn.time"></p>
+                                </div>
                             </div>
                         </template>
-                        <div x-show="todaysTransactions.length === 0" class="text-center py-6 text-slate-400">No transactions recorded yet today.</div>
+                        <div x-show="filteredTransactions.length === 0" class="text-center py-10 text-slate-400">No matching transactions found.</div>
                     </div>
                 </div>
             </div>
@@ -409,29 +430,29 @@
             <form @submit.prevent="saveProduct()" class="space-y-3">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Emoji Icon</label>
-                    <input type="text" x-model="productModal.form.icon" required maxlength="2" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm text-center font-extrabold">
+                    <input type="text" x-model="productModal.form.icon" required maxlength="2" class="w-full px-3 py-2 rounded-xl border text-sm text-center font-extrabold">
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Item Name</label>
-                    <input type="text" x-model="productModal.form.name" required placeholder="e.g. Milo Sachet" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                    <input type="text" x-model="productModal.form.name" required placeholder="e.g. Milo Sachet" class="w-full px-3 py-2 rounded-xl border text-xs">
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Unit</label>
-                    <input type="text" x-model="productModal.form.unit" required placeholder="e.g. Tin / Sachet / Bottle" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                    <input type="text" x-model="productModal.form.unit" required placeholder="e.g. Tin / Sachet" class="w-full px-3 py-2 rounded-xl border text-xs">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Price (₵)</label>
-                        <input type="number" step="0.50" min="0" x-model.number="productModal.form.price" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold">
+                        <input type="number" step="0.50" min="0" x-model.number="productModal.form.price" required class="w-full px-3 py-2 rounded-xl border text-xs font-bold">
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Stock</label>
-                        <input type="number" min="0" step="1" x-model.number="productModal.form.stock" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold">
+                        <input type="number" min="0" step="1" x-model.number="productModal.form.stock" required class="w-full px-3 py-2 rounded-xl border text-xs font-bold">
                     </div>
                 </div>
                 <div class="flex items-center space-x-2 pt-2">
-                    <button type="button" @click="productModal.open = false" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl text-xs">Cancel</button>
-                    <button type="submit" class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-xl text-xs">Save</button>
+                    <button type="button" @click="productModal.open = false" class="flex-1 bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="flex-1 bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs">Save</button>
                 </div>
             </form>
         </div>
@@ -441,19 +462,17 @@
     <div x-show="creditModal.open" x-cloak class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4">
             <h3 class="font-extrabold text-slate-800 text-base">Select Customer for Credit</h3>
-            <p class="text-xs text-slate-500">Record this ₵<span x-text="cartTotal.toFixed(2)"></span> debt under which customer?</p>
             <div class="space-y-2 max-h-48 overflow-y-auto">
                 <template x-for="cust in customers" :key="cust.id">
-                    <button @click="confirmCreditCheckout(cust)" class="w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-500 transition flex items-center justify-between">
+                    <button @click="confirmCreditCheckout(cust)" class="w-full text-left p-3 rounded-xl bg-slate-50 hover:bg-emerald-50 border transition flex items-center justify-between">
                         <div>
                             <p class="font-bold text-xs text-slate-800" x-text="cust.name"></p>
-                            <p class="text-[10px] text-slate-400" x-text="cust.phone || 'No phone'"></p>
                         </div>
                         <span class="text-xs font-bold text-red-600">Owes ₵<span x-text="cust.debt.toFixed(2)"></span></span>
                     </button>
                 </template>
             </div>
-            <button @click="openNewCustomerModal(); creditModal.open = false;" class="w-full bg-emerald-100 text-emerald-800 font-bold py-2 rounded-xl text-xs">+ Add New Customer</button>
+            <button @click="openNewCustomerModal(); creditModal.open = false;" class="w-full bg-emerald-100 text-emerald-800 font-bold py-2 rounded-xl text-xs">+ Add Customer</button>
             <button @click="creditModal.open = false" class="w-full bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs">Cancel</button>
         </div>
     </div>
@@ -465,15 +484,15 @@
             <form @submit.prevent="saveCustomer()" class="space-y-3">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Customer Name</label>
-                    <input type="text" x-model="customerModal.form.name" required placeholder="e.g. Auntie Efua" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold">
+                    <input type="text" x-model="customerModal.form.name" required placeholder="e.g. Auntie Efua" class="w-full px-3 py-2 rounded-xl border text-xs font-bold">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Phone Number (Optional)</label>
-                    <input type="text" x-model="customerModal.form.phone" placeholder="e.g. 0241234567" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs">
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Phone Number</label>
+                    <input type="text" x-model="customerModal.form.phone" placeholder="e.g. 0241234567" class="w-full px-3 py-2 rounded-xl border text-xs">
                 </div>
                 <div class="flex items-center space-x-2 pt-2">
-                    <button type="button" @click="customerModal.open = false" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl text-xs">Cancel</button>
-                    <button type="submit" class="flex-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-xl text-xs">Save Customer</button>
+                    <button type="button" @click="customerModal.open = false" class="flex-1 bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="flex-1 bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs">Save</button>
                 </div>
             </form>
         </div>
@@ -485,41 +504,28 @@
             return {
                 currentTab: 'sales',
                 searchQuery: '',
+                reportFilter: 'ALL',
                 toast: { show: false, message: '', icon: '✅' },
                 
                 shop: { name: '', location: '', owner: '', setupCompleted: false },
-                setupBackup: null,
                 setupForm: { password: '', confirm: '' },
                 setupError: '',
                 locked: true,
                 lockInput: '',
                 lockError: '',
-                failedAttempts: 0,
-                lockoutUntil: 0,
-                idleTimer: null,
+
+                adminModal: { open: false, input: '', error: '', authenticated: false },
 
                 products: [
                     { id: 1, name: 'Ideal Milk Tin', unit: 'Tin', price: 12.00, stock: 48, icon: '🥛' },
                     { id: 2, name: 'Milo Refill Sachet', unit: 'Sachet', price: 3.50, stock: 90, icon: '🍫' },
                     { id: 3, name: 'Geisha Mackerel', unit: 'Tin', price: 18.00, stock: 24, icon: '🐟' },
-                    { id: 4, name: 'Key Soap Large', unit: 'Bar', price: 10.00, stock: 35, icon: '🧼' },
-                    { id: 5, name: 'Pepsodent Toothpaste', unit: 'Tube', price: 22.00, stock: 15, icon: '🪥' },
-                    { id: 6, name: 'Sachet Water (Bag)', unit: 'Bag', price: 5.00, stock: 60, icon: '💧' },
-                    { id: 7, name: 'Club Beer / Malt', unit: 'Bottle', price: 14.00, stock: 40, icon: '🍾' },
-                    { id: 8, name: 'Tasty Tom Tomato Mix', unit: 'Sachet', price: 2.50, stock: 120, icon: '🍅' },
-                    { id: 9, name: 'Omo Washing Powder', unit: 'Packet', price: 8.00, stock: 30, icon: '📦' },
-                    { id: 10, name: 'Ghana Sugar (Cup)', unit: 'Cup', price: 4.00, stock: 50, icon: '🧂' },
-                    { id: 11, name: 'Loaf of Bread', unit: 'Loaf', price: 15.00, stock: 12, icon: '🍞' },
-                    { id: 12, name: 'Lipton Yellow Label', unit: 'Box', price: 25.00, stock: 18, icon: '🍵' }
+                    { id: 4, name: 'Key Soap Large', unit: 'Bar', price: 10.00, stock: 35, icon: '🧼' }
                 ],
-
                 cart: [],
-
                 customers: [
-                    { id: 1, name: 'Auntie Ama', phone: '0241112233', debt: 45.00, lastItems: 'Ideal Milk, Sugar', lastDate: '15 Nov' },
-                    { id: 2, name: 'Uncle Kofi', phone: '0205554433', debt: 22.50, lastItems: 'Key Soap, Bread', lastDate: '14 Nov' }
+                    { id: 1, name: 'Auntie Ama', phone: '0241112233', debt: 45.00, lastItems: 'Ideal Milk' }
                 ],
-
                 transactions: [],
                 dailyTotals: { date: '', cash: 0.00, momo: 0.00, credit: 0.00 },
 
@@ -528,12 +534,7 @@
                 creditModal: { open: false },
 
                 initApp() {
-                    const load = (key, fallback) => {
-                        try {
-                            const raw = localStorage.getItem(key);
-                            return raw ? JSON.parse(raw) : fallback;
-                        } catch (e) { return fallback; }
-                    };
+                    const load = (k, f) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : f; } catch(e) { return f; } };
                     this.shop = load('ghana_shop_config', this.shop);
                     this.products = load('ghana_shop_products', this.products);
                     this.customers = load('ghana_shop_customers', this.customers);
@@ -541,35 +542,13 @@
                     this.dailyTotals = load('ghana_shop_totals', this.dailyTotals);
                     this.rollDay();
                     if (this.shop.setupCompleted && !this.shop.passwordHash) {
-                        // Shops registered before passwords existed must add one
-                        this.setupError = 'Add a password to protect your shop.';
                         this.shop.setupCompleted = false;
                     }
                     this.locked = !!this.shop.passwordHash;
-                    if (this.locked) this.focusLock();
-                    const resetIdle = () => {
-                        clearTimeout(this.idleTimer);
-                        if (this.shop.passwordHash && this.shop.setupCompleted && !this.locked) {
-                            this.idleTimer = setTimeout(() => this.lock(), 5 * 60 * 1000);
-                        }
-                    };
-                    ['pointerdown', 'keydown', 'touchstart'].forEach(ev => window.addEventListener(ev, resetIdle, { passive: true }));
-                    resetIdle();
-                    this.resetIdle = resetIdle;
                 },
 
-                save(key, value) {
-                    try {
-                        localStorage.setItem(key, JSON.stringify(value));
-                    } catch (e) {
-                        this.showToast('Could not save. Phone storage may be full or blocked.', '⚠️');
-                    }
-                },
-
-                todayKey() {
-                    const d = new Date();
-                    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-                },
+                save(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
+                todayKey() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); },
 
                 rollDay() {
                     const today = this.todayKey();
@@ -579,243 +558,117 @@
                     }
                 },
 
-                get todaysTransactions() {
+                get debtorsCount() { return this.customers.filter(c => c.debt > 0).length; },
+                get filteredProducts() {
+                    if (!this.searchQuery) return this.products;
+                    return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                },
+                get cartTotal() { return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); },
+                get totalDebt() { return this.customers.reduce((sum, c) => sum + c.debt, 0); },
+
+                get filteredTransactions() {
                     const today = this.todayKey();
-                    return this.transactions.filter(t => t.date === today);
+                    return this.transactions.filter(t => {
+                        if (this.reportFilter === 'TODAY') return t.date === today;
+                        if (this.reportFilter === 'CASH') return t.type.includes('CASH');
+                        if (this.reportFilter === 'MOMO') return t.type.includes('MOMO');
+                        if (this.reportFilter === 'CREDIT') return t.type.includes('CREDIT');
+                        return true;
+                    });
                 },
 
-                get debtorsCount() {
-                    return this.customers.filter(c => c.debt > 0).length;
-                },
-
-                newSalt() {
-                    return btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
-                },
-
-                async hashPassword(password, saltB64) {
+                newSalt() { return btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))); },
+                async hashPassword(pw, saltB64) {
                     const salt = Uint8Array.from(atob(saltB64), c => c.charCodeAt(0));
-                    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+                    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveBits']);
                     const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, 256);
                     return btoa(String.fromCharCode(...new Uint8Array(bits)));
                 },
 
-                focusLock() {
-                    if (this.$nextTick) this.$nextTick(() => { if (this.$refs.lockInput) this.$refs.lockInput.focus(); });
-                },
-
-                lock() {
-                    if (!this.shop.passwordHash) return;
-                    this.locked = true;
-                    this.lockInput = '';
-                    this.lockError = '';
-                    clearTimeout(this.idleTimer);
-                    this.focusLock();
-                },
-
+                lock() { this.locked = true; this.lockInput = ''; },
                 async unlock() {
-                    const wait = Math.ceil((this.lockoutUntil - Date.now()) / 1000);
-                    if (wait > 0) {
-                        this.lockError = 'Too many wrong tries. Wait ' + wait + ' seconds.';
-                        return;
-                    }
-                    let ok = false;
                     try {
-                        ok = (await this.hashPassword(this.lockInput, this.shop.salt)) === this.shop.passwordHash;
-                    } catch (e) {
-                        this.lockError = 'This browser cannot check passwords. Open the app with its https link.';
-                        return;
-                    }
-                    if (ok) {
-                        this.locked = false;
-                        this.lockInput = '';
-                        this.lockError = '';
-                        this.failedAttempts = 0;
-                        if (this.resetIdle) this.resetIdle();
+                        const ok = (await this.hashPassword(this.lockInput, this.shop.salt)) === this.shop.passwordHash;
+                        if (ok) { this.locked = false; this.lockInput = ''; }
+                        else { this.lockError = 'Wrong password.'; }
+                    } catch(e) { this.lockError = 'Authentication error.'; }
+                },
+
+                openAdminLogin() { this.adminModal.open = true; this.adminModal.input = ''; this.adminModal.error = ''; },
+                verifyAdmin() {
+                    // Master Admin passcode set to 'WISEADMIN2026' (you can change this to any passcode you like)
+                    if (this.adminModal.input === 'WISEADMIN2026') {
+                        this.adminModal.authenticated = true;
+                        this.adminModal.error = '';
                     } else {
-                        this.failedAttempts++;
-                        this.lockInput = '';
-                        if (this.failedAttempts >= 5) {
-                            this.failedAttempts = 0;
-                            this.lockoutUntil = Date.now() + 30000;
-                            this.lockError = 'Too many wrong tries. Wait 30 seconds.';
-                        } else {
-                            this.lockError = 'Wrong password. Try again.';
-                        }
+                        this.adminModal.error = 'Invalid Master Admin Passcode.';
                     }
                 },
 
                 resetDevice() {
-                    const typed = prompt('There is no way to recover a forgotten password. To start over, ALL shop data on this device will be erased (sales, credit book, prices). If you have a backup file you can restore it afterwards.\n\nType ERASE to continue:');
-                    if (typed !== 'ERASE') return;
-                    ['ghana_shop_config', 'ghana_shop_products', 'ghana_shop_customers', 'ghana_shop_txns', 'ghana_shop_totals'].forEach(k => {
-                        try { localStorage.removeItem(k); } catch (e) {}
-                    });
+                    if (prompt('Type ERASE to wipe data:') !== 'ERASE') return;
+                    ['ghana_shop_config', 'ghana_shop_products', 'ghana_shop_customers', 'ghana_shop_txns', 'ghana_shop_totals'].forEach(k => localStorage.removeItem(k));
                     location.reload();
                 },
 
-                openSetup() {
-                    this.setupForm = { password: '', confirm: '' };
-                    this.setupError = '';
-                    this.setupBackup = { ...this.shop };
-                    this.shop.setupCompleted = false;
-                },
-
-                cancelSetup() {
-                    this.shop = { ...this.setupBackup, setupCompleted: true };
-                    this.setupError = '';
-                    this.setupBackup = null;
-                },
-
                 exportData() {
-                    const data = {
-                        app: 'ghana-provision-pos',
-                        savedAt: new Date().toISOString(),
-                        shop: { name: this.shop.name, location: this.shop.location, owner: this.shop.owner },
-                        products: this.products,
-                        customers: this.customers,
-                        transactions: this.transactions,
-                        dailyTotals: this.dailyTotals
-                    };
+                    const data = { shop: this.shop, products: this.products, customers: this.customers, transactions: this.transactions };
                     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'shop-backup-' + this.todayKey() + '.json';
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    URL.revokeObjectURL(url);
-                    this.showToast('Backup file saved to your phone', '💾');
+                    const a = document.createElement('a'); a.href = url; a.download = 'shop-backup.json';
+                    document.body.appendChild(a); a.click(); a.remove();
+                },
+
+                exportReportCSV() {
+                    let csv = 'Type,Amount (GHS),Details,Date,Time\n';
+                    this.transactions.forEach(t => {
+                        csv += `"${t.type}",${t.amount},"${t.details}","${t.date}","${t.time}"\n`;
+                    });
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = 'sales-report.csv';
+                    document.body.appendChild(a); a.click(); a.remove();
+                    this.showToast('Sales Report CSV downloaded!', '📥');
                 },
 
                 importData(event) {
                     const file = event.target.files[0];
-                    event.target.value = '';
                     if (!file) return;
                     const reader = new FileReader();
                     reader.onload = () => {
-                        try {
-                            const d = JSON.parse(reader.result);
-                            if (d.app !== 'ghana-provision-pos' || !Array.isArray(d.products) || !Array.isArray(d.customers)) {
-                                throw new Error('bad file');
-                            }
-                            if (!confirm('Restore this backup? It will replace the data on this device.')) return;
-                            this.shop = { ...this.shop, name: (d.shop && d.shop.name) || this.shop.name, location: (d.shop && d.shop.location) || this.shop.location, owner: (d.shop && d.shop.owner) || this.shop.owner, setupCompleted: true };
-                            this.products = d.products;
-                            this.customers = d.customers;
-                            this.transactions = d.transactions || [];
-                            this.dailyTotals = d.dailyTotals || { date: '', cash: 0, momo: 0, credit: 0 };
-                            this.save('ghana_shop_config', this.shop);
-                            this.save('ghana_shop_products', this.products);
-                            this.save('ghana_shop_customers', this.customers);
-                            this.save('ghana_shop_txns', this.transactions);
-                            this.save('ghana_shop_totals', this.dailyTotals);
-                            this.rollDay();
-                            this.cart = [];
-                            this.showToast('Backup restored', '✅');
-                        } catch (e) {
-                            this.showToast('That file is not a valid shop backup', '⚠️');
-                        }
+                        const d = JSON.parse(reader.result);
+                        this.shop = d.shop; this.products = d.products; this.customers = d.customers; this.transactions = d.transactions || [];
+                        this.save('ghana_shop_config', this.shop); this.save('ghana_shop_products', this.products);
+                        this.save('ghana_shop_customers', this.customers); this.save('ghana_shop_txns', this.transactions);
+                        this.showToast('Data restored successfully!', '✅');
                     };
                     reader.readAsText(file);
                 },
 
                 async completeSetup() {
                     const pw = this.setupForm.password;
-                    const needsPassword = !this.shop.passwordHash;
-                    if (needsPassword || pw) {
-                        if (pw.length < 4) {
-                            this.setupError = 'Password must be at least 4 characters.';
-                            return;
-                        }
-                        if (pw !== this.setupForm.confirm) {
-                            this.setupError = 'The two passwords do not match.';
-                            return;
-                        }
-                        try {
-                            const salt = this.newSalt();
-                            this.shop.passwordHash = await this.hashPassword(pw, salt);
-                            this.shop.salt = salt;
-                        } catch (e) {
-                            this.setupError = 'This browser cannot set a password. Open the app with its https link.';
-                            return;
-                        }
-                    }
-                    this.shop.name = this.shop.name.trim();
-                    this.shop.location = this.shop.location.trim();
-                    this.shop.owner = this.shop.owner.trim();
+                    if (pw.length < 4 || pw !== this.setupForm.confirm) { this.setupError = 'Passwords must match and be 4+ characters.'; return; }
+                    const salt = this.newSalt();
+                    this.shop.passwordHash = await this.hashPassword(pw, salt);
+                    this.shop.salt = salt;
                     this.shop.setupCompleted = true;
-                    this.setupBackup = null;
-                    this.setupError = '';
-                    this.setupForm = { password: '', confirm: '' };
                     this.locked = false;
                     this.save('ghana_shop_config', this.shop);
-                    if (this.resetIdle) this.resetIdle();
-                    this.showToast('Shop setup saved successfully!', '✨');
+                    this.showToast('Setup complete!', '✨');
                 },
 
-                saveInventory() {
-                    this.products.forEach(p => {
-                        const price = Number(p.price);
-                        const stock = Math.floor(Number(p.stock));
-                        p.price = Number.isFinite(price) && price >= 0 ? price : 0;
-                        p.stock = Number.isFinite(stock) && stock >= 0 ? stock : 0;
-                    });
-                    this.save('ghana_shop_products', this.products);
-                    this.showToast('Prices & stock updated!', '💾');
-                },
-
-                get filteredProducts() {
-                    if (!this.searchQuery) return this.products;
-                    return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
-                },
-
-                get cartTotal() {
-                    return this.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-                },
-
-                get totalDebt() {
-                    return this.customers.reduce((sum, c) => sum + c.debt, 0);
-                },
+                openSetup() { this.shop.setupCompleted = false; },
+                saveInventory() { this.save('ghana_shop_products', this.products); this.showToast('Inventory saved', '💾'); },
 
                 addToCart(product) {
-                    if (product.stock <= 0) {
-                        this.showToast('Out of stock!', '⚠️');
-                        return;
-                    }
-                    const existing = this.cart.find(item => item.id === product.id);
-                    if (existing) {
-                        if (existing.qty < product.stock) {
-                            existing.qty++;
-                        } else {
-                            this.showToast('Reached max stock limit!', '⚠️');
-                        }
-                    } else {
-                        this.cart.push({ ...product, qty: 1 });
-                    }
+                    if (product.stock <= 0) { this.showToast('Out of stock!', '⚠️'); return; }
+                    const existing = this.cart.find(i => i.id === product.id);
+                    if (existing) { if (existing.qty < product.stock) existing.qty++; }
+                    else { this.cart.push({ ...product, qty: 1 }); }
                 },
-
-                increaseQty(index) {
-                    const item = this.cart[index];
-                    const prod = this.products.find(p => p.id === item.id);
-                    if (!prod) return;
-                    if (item.qty < prod.stock) {
-                        item.qty++;
-                    } else {
-                        this.showToast('Reached max stock limit!', '⚠️');
-                    }
-                },
-
-                decreaseQty(index) {
-                    this.cart[index].qty--;
-                    if (this.cart[index].qty <= 0) {
-                        this.cart.splice(index, 1);
-                    }
-                },
-
-                clearCart() {
-                    this.cart = [];
-                },
+                increaseQty(i) { if (this.cart[i].qty < this.products.find(p => p.id === this.cart[i].id).stock) this.cart[i].qty++; },
+                decreaseQty(i) { this.cart[i].qty--; if (this.cart[i].qty <= 0) this.cart.splice(i, 1); },
+                clearCart() { this.cart = []; },
 
                 checkout(type) {
                     if (this.cart.length === 0) return;
@@ -823,171 +676,89 @@
                     const total = this.cartTotal;
                     if (type === 'CASH') this.dailyTotals.cash += total;
                     if (type === 'MOMO') this.dailyTotals.momo += total;
-
-                    // Deduct stock
-                    this.cart.forEach(cartItem => {
-                        const prod = this.products.find(p => p.id === cartItem.id);
-                        if (prod) prod.stock -= cartItem.qty;
-                    });
-
-                    const detailsStr = this.cart.map(i => `${i.qty}x ${i.name}`).join(', ');
+                    this.cart.forEach(ci => { const p = this.products.find(x => x.id === ci.id); if (p) p.stock -= ci.qty; });
+                    
                     this.transactions.unshift({
-                        type: `${type} PAYMENT`,
-                        amount: total,
-                        details: detailsStr,
-                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        date: this.todayKey()
+                        type: `${type} PAYMENT`, amount: total, details: this.cart.map(i => `${i.qty}x ${i.name}`).join(', '),
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: this.todayKey()
                     });
-
-                    this.save('ghana_shop_products', this.products);
-                    this.save('ghana_shop_txns', this.transactions);
-                    this.save('ghana_shop_totals', this.dailyTotals);
-
+                    this.save('ghana_shop_products', this.products); this.save('ghana_shop_txns', this.transactions); this.save('ghana_shop_totals', this.dailyTotals);
                     this.cart = [];
-                    this.showToast(`Sale recorded successfully! (${type})`, '✅');
+                    this.showToast(`Sale recorded! (${type})`, '✅');
                 },
 
-                openCreditModal() {
-                    if (this.cart.length === 0) return;
-                    if (this.customers.length === 0) {
-                        this.showToast('Please add a customer first!', '⚠️');
-                        this.openNewCustomerModal();
-                        return;
-                    }
-                    this.creditModal.open = true;
-                },
-
-                confirmCreditCheckout(customer) {
-                    if (this.cart.length === 0) return;
+                openCreditModal() { if (this.cart.length > 0) this.creditModal.open = true; },
+                confirmCreditCheckout(cust) {
                     this.rollDay();
                     const total = this.cartTotal;
-                    customer.debt += total;
-                    customer.lastItems = this.cart.map(i => i.name).join(', ');
-                    customer.lastDate = new Date().toLocaleDateString();
-
+                    cust.debt += total;
+                    cust.lastItems = this.cart.map(i => i.name).join(', ');
                     this.dailyTotals.credit += total;
-
-                    // Deduct stock
-                    this.cart.forEach(cartItem => {
-                        const prod = this.products.find(p => p.id === cartItem.id);
-                        if (prod) prod.stock -= cartItem.qty;
-                    });
-
+                    this.cart.forEach(ci => { const p = this.products.find(x => x.id === ci.id); if (p) p.stock -= ci.qty; });
+                    
                     this.transactions.unshift({
-                        type: `CREDIT BOOK (${customer.name})`,
-                        amount: total,
-                        details: customer.lastItems,
-                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        date: this.todayKey()
+                        type: `CREDIT BOOK (${cust.name})`, amount: total, details: cust.lastItems,
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: this.todayKey()
                     });
-
-                    this.save('ghana_shop_products', this.products);
-                    this.save('ghana_shop_customers', this.customers);
-                    this.save('ghana_shop_txns', this.transactions);
-                    this.save('ghana_shop_totals', this.dailyTotals);
-
-                    this.cart = [];
-                    this.creditModal.open = false;
-                    this.showToast(`Credit recorded for ${customer.name}`, '📖');
+                    this.save('ghana_shop_products', this.products); this.save('ghana_shop_customers', this.customers);
+                    this.save('ghana_shop_txns', this.transactions); this.save('ghana_shop_totals', this.dailyTotals);
+                    this.cart = []; this.creditModal.open = false;
+                    this.showToast(`Credit recorded for ${cust.name}`, '📖');
                 },
 
-                recordPayment(customer) {
-                    this.rollDay();
-                    const amountStr = prompt(`Enter payment amount received from ${customer.name} (GHS):`, customer.debt);
-                    if (amountStr) {
-                        const amt = parseFloat(amountStr);
-                        if (!isNaN(amt) && amt > 0) {
-                            const paid = Math.min(amt, customer.debt);
-                            customer.debt = Math.max(0, customer.debt - paid);
-                            this.dailyTotals.cash += paid;
-
-                            this.transactions.unshift({
-                                type: `DEBT PAYMENT (${customer.name})`,
-                                amount: paid,
-                                details: 'Settling credit ledger',
-                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        date: this.todayKey()
-                            });
-
-                            this.save('ghana_shop_customers', this.customers);
-                            this.save('ghana_shop_txns', this.transactions);
-                            this.save('ghana_shop_totals', this.dailyTotals);
-                            this.showToast(`Payment of ₵${paid.toFixed(2)} recorded!`, '💸');
-                        }
+                recordPayment(cust) {
+                    const amt = parseFloat(prompt(`Enter payment amount received from ${cust.name} (GHS):`, cust.debt));
+                    if (!isNaN(amt) && amt > 0) {
+                        const paid = Math.min(amt, cust.debt);
+                        cust.debt = Math.max(0, cust.debt - paid);
+                        this.dailyTotals.cash += paid;
+                        this.transactions.unshift({
+                            type: `DEBT PAYMENT (${cust.name})`, amount: paid, details: 'Settling credit ledger',
+                            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: this.todayKey()
+                        });
+                        this.save('ghana_shop_customers', this.customers); this.save('ghana_shop_txns', this.transactions); this.save('ghana_shop_totals', this.dailyTotals);
+                        this.showToast(`Payment of ₵${paid.toFixed(2)} recorded!`, '💸');
                     }
                 },
 
-                openAddProductModal() {
-                    this.productModal.isEdit = false;
-                    this.productModal.form = { id: Date.now(), name: '', unit: 'Tin', price: 10.00, stock: 20, icon: '📦' };
-                    this.productModal.open = true;
-                },
-
-                editProduct(item) {
-                    this.productModal.isEdit = true;
-                    this.productModal.form = { ...item };
-                    this.productModal.open = true;
-                },
-
+                openAddProductModal() { this.productModal.isEdit = false; this.productModal.form = { id: Date.now(), name: '', unit: 'Tin', price: 10, stock: 20, icon: '📦' }; this.productModal.open = true; },
+                editProduct(item) { this.productModal.isEdit = true; this.productModal.form = { ...item }; this.productModal.open = true; },
                 saveProduct() {
                     const f = this.productModal.form;
-                    f.name = String(f.name).trim();
-                    f.unit = String(f.unit).trim();
-                    f.price = Number(f.price);
-                    f.stock = Math.floor(Number(f.stock));
-                    if (!f.name || !f.unit) {
-                        this.showToast('Please enter the item name and unit', '⚠️');
-                        return;
-                    }
-                    if (!Number.isFinite(f.price) || f.price < 0 || !Number.isFinite(f.stock) || f.stock < 0) {
-                        this.showToast('Price and stock must be 0 or more', '⚠️');
-                        return;
-                    }
                     if (this.productModal.isEdit) {
-                        const idx = this.products.findIndex(p => p.id === this.productModal.form.id);
-                        if (idx !== -1) this.products[idx] = { ...this.productModal.form };
-                        this.showToast('Product updated!', '✅');
+                        const idx = this.products.findIndex(p => p.id === f.id);
+                        if (idx !== -1) this.products[idx] = { ...f };
                     } else {
-                        this.products.push({ ...this.productModal.form, id: Date.now() });
-                        this.showToast('New product added!', '🎉');
+                        this.products.push({ ...f, id: Date.now() });
                     }
                     this.save('ghana_shop_products', this.products);
                     this.productModal.open = false;
+                    this.showToast('Product saved!', '✅');
                 },
-
                 deleteProduct(id) {
-                    if (confirm('Are you sure you want to delete this item?')) {
+                    if (confirm('Delete this item?')) {
                         this.products = this.products.filter(p => p.id !== id);
-                        this.cart = this.cart.filter(i => i.id !== id);
                         this.save('ghana_shop_products', this.products);
-                        this.showToast('Product removed', '🗑️');
                     }
                 },
 
-                openNewCustomerModal() {
-                    this.customerModal.form = { name: '', phone: '' };
-                    this.customerModal.open = true;
-                },
-
+                openNewCustomerModal() { this.customerModal.form = { name: '', phone: '' }; this.customerModal.open = true; },
                 saveCustomer() {
-                    this.customers.push({ id: Date.now(), ...this.customerModal.form, debt: 0, lastItems: 'None', lastDate: 'N/A' });
+                    this.customers.push({ id: Date.now(), ...this.customerModal.form, debt: 0, lastItems: 'None' });
                     this.save('ghana_shop_customers', this.customers);
+                    this.customerModal.open.false;
                     this.customerModal.open = false;
-                    this.showToast('Customer added successfully!', '👤');
+                    this.showToast('Customer added!', '👤');
                 },
-
                 deleteCustomer(id) {
-                    if (confirm('Remove this customer from the credit book?')) {
+                    if (confirm('Remove customer?')) {
                         this.customers = this.customers.filter(c => c.id !== id);
                         this.save('ghana_shop_customers', this.customers);
-                        this.showToast('Customer removed', '🗑️');
                     }
                 },
 
                 showToast(message, icon = '✅') {
-                    this.toast.message = message;
-                    this.toast.icon = icon;
-                    this.toast.show = true;
+                    this.toast.message = message; this.toast.icon = icon; this.toast.show = true;
                     setTimeout(() => { this.toast.show = false; }, 3000);
                 }
             }
