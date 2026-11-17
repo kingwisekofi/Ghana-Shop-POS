@@ -407,16 +407,16 @@
             </div>
         </section>
 
-        <!-- TAB: SALES REPORTS & EXPENSES -->
+        <!-- TAB: SALES REPORTS & PAST INVENTORY -->
         <section x-show="currentTab === 'reports'" class="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto bg-slate-50">
             <div class="max-w-4xl mx-auto w-full space-y-6">
                 <div class="bg-emerald-800 text-white p-6 rounded-3xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div class="space-y-1">
                         <div class="flex items-center space-x-2">
                             <span class="text-2xl">📈</span>
-                            <h2 class="text-xl font-extrabold">Sales Reports & Cash Drawer</h2>
+                            <h2 class="text-xl font-extrabold">Sales Reports & Past Inventory</h2>
                         </div>
-                        <p class="text-xs text-emerald-200">Reconcile cash drawer, log expenses, and export reports.</p>
+                        <p class="text-xs text-emerald-200">Reconcile cash drawer, check past stock logs, and export data.</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <button @click="openExpenseModal()" class="bg-amber-500 hover:bg-amber-600 text-white font-extrabold px-3 py-2.5 rounded-xl text-xs shadow transition">+ Log Expense 💸</button>
@@ -445,6 +445,47 @@
                     <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 shadow-sm space-y-1">
                         <p class="text-[10px] text-emerald-800 font-bold uppercase">Expected Drawer Cash</p>
                         <p class="text-lg font-extrabold text-emerald-900">₵<span x-text="(dailyTotals.cash - dailyTotals.expenses).toFixed(2)"></span></p>
+                    </div>
+                </div>
+
+                <!-- Past Inventory Viewer Section -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div>
+                            <h3 class="font-extrabold text-slate-800 text-sm">📦 Historical Inventory Log (Past Days Stock)</h3>
+                            <p class="text-[11px] text-slate-500">Select a past date to check closing stock levels.</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <select x-model="selectedHistoryDate" class="px-3 py-1.5 rounded-xl border text-xs bg-slate-50 font-semibold focus:outline-none">
+                                <template x-for="dateKey in Object.keys(inventorySnapshots).sort().reverse()" :key="dateKey">
+                                    <option :value="dateKey" x-text="dateKey"></option>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 max-h-60 overflow-y-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="text-slate-500 border-b pb-2">
+                                    <th class="pb-2">Item Name</th>
+                                    <th class="pb-2">Unit</th>
+                                    <th class="pb-2">Recorded Price</th>
+                                    <th class="pb-2 text-right">Stock on Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                <template x-for="item in currentHistoryItems" :key="item.id">
+                                    <tr>
+                                        <td class="py-2 font-bold text-slate-800" x-text="item.name"></td>
+                                        <td class="py-2 text-slate-500" x-text="item.unit"></td>
+                                        <td class="py-2 text-emerald-700 font-semibold">₵<span x-text="item.price.toFixed(2)"></span></td>
+                                        <td class="py-2 text-right font-extrabold" x-text="item.stock"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                        <div x-show="currentHistoryItems.length === 0" class="text-center py-6 text-slate-400">No stock snapshot found for this date.</div>
                     </div>
                 </div>
 
@@ -569,6 +610,7 @@
                 reportFilter: 'ALL',
                 inventoryFilter: 'ALL',
                 customerPhone: '',
+                selectedHistoryDate: '',
                 toast: { show: false, message: '', icon: '✅' },
                 
                 shop: { name: '', location: '', owner: '', setupCompleted: false },
@@ -593,6 +635,7 @@
                 ],
                 transactions: [],
                 dailyTotals: { date: '', cash: 0.00, momo: 0.00, credit: 0.00, expenses: 0.00 },
+                inventorySnapshots: {},
 
                 productModal: { open: false, isEdit: false, form: { id: null, name: '', unit: '', price: 0, stock: 0, icon: '📦' } },
                 customerModal: { open: false, form: { name: '', phone: '' } },
@@ -605,11 +648,16 @@
                     this.customers = load('ghana_shop_customers', this.customers);
                     this.transactions = load('ghana_shop_txns', this.transactions);
                     this.dailyTotals = load('ghana_shop_totals', this.dailyTotals);
+                    this.inventorySnapshots = load('ghana_shop_inv_snapshots', {});
+                    
                     this.rollDay();
                     if (this.shop.setupCompleted && !this.shop.passwordHash) {
                         this.shop.setupCompleted = false;
                     }
                     this.locked = !!this.shop.passwordHash;
+
+                    const dates = Object.keys(this.inventorySnapshots).sort().reverse();
+                    if (dates.length > 0) this.selectedHistoryDate = dates[0];
                 },
 
                 save(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
@@ -617,9 +665,16 @@
 
                 rollDay() {
                     const today = this.todayKey();
+                    // Save today's snapshot of current inventory
+                    this.inventorySnapshots[today] = JSON.parse(JSON.stringify(this.products));
+                    this.save('ghana_shop_inv_snapshots', this.inventorySnapshots);
+
                     if (this.dailyTotals.date !== today) {
                         this.dailyTotals = { date: today, cash: 0, momo: 0, credit: 0, expenses: 0 };
                         this.save('ghana_shop_totals', this.dailyTotals);
+                    }
+                    if (!this.selectedHistoryDate) {
+                        this.selectedHistoryDate = today;
                     }
                 },
 
@@ -634,6 +689,7 @@
                 },
                 get cartTotal() { return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); },
                 get totalDebt() { return this.customers.reduce((sum, c) => sum + c.debt, 0); },
+                get currentHistoryItems() { return this.inventorySnapshots[this.selectedHistoryDate] || []; },
 
                 get filteredTransactions() {
                     const today = this.todayKey();
@@ -728,17 +784,17 @@
                         `Thank you for shopping with us! 🙏`
                     );
                     window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
-                    this.customerPhone = ''; // Clear phone field after sending
+                    this.customerPhone = '';
                 },
 
                 resetDevice() {
                     if (prompt('Type ERASE to wipe data:') !== 'ERASE') return;
-                    ['ghana_shop_config', 'ghana_shop_products', 'ghana_shop_customers', 'ghana_shop_txns', 'ghana_shop_totals'].forEach(k => localStorage.removeItem(k));
+                    ['ghana_shop_config', 'ghana_shop_products', 'ghana_shop_customers', 'ghana_shop_txns', 'ghana_shop_totals', 'ghana_shop_inv_snapshots'].forEach(k => localStorage.removeItem(k));
                     location.reload();
                 },
 
                 exportData() {
-                    const data = { shop: this.shop, products: this.products, customers: this.customers, transactions: this.transactions };
+                    const data = { shop: this.shop, products: this.products, customers: this.customers, transactions: this.transactions, snapshots: this.inventorySnapshots };
                     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a'); a.href = url; a.download = 'shop-backup.json';
@@ -764,8 +820,10 @@
                     reader.onload = () => {
                         const d = JSON.parse(reader.result);
                         this.shop = d.shop; this.products = d.products; this.customers = d.customers; this.transactions = d.transactions || [];
+                        this.inventorySnapshots = d.snapshots || {};
                         this.save('ghana_shop_config', this.shop); this.save('ghana_shop_products', this.products);
                         this.save('ghana_shop_customers', this.customers); this.save('ghana_shop_txns', this.transactions);
+                        this.save('ghana_shop_inv_snapshots', this.inventorySnapshots);
                         this.showToast('Data restored successfully!', '✅');
                     };
                     reader.readAsText(file);
@@ -784,7 +842,11 @@
                 },
 
                 openSetup() { this.shop.setupCompleted = false; },
-                saveInventory() { this.save('ghana_shop_products', this.products); this.showToast('Inventory saved', '💾'); },
+                saveInventory() { 
+                    this.save('ghana_shop_products', this.products); 
+                    this.rollDay(); // Update today's snapshot
+                    this.showToast('Inventory saved', '💾'); 
+                },
 
                 addToCart(product) {
                     if (product.stock <= 0) { this.showToast('Out of stock!', '⚠️'); return; }
@@ -806,6 +868,9 @@
                     if (type === 'MOMO') this.dailyTotals.momo += total;
                     this.cart.forEach(ci => { const p = this.products.find(x => x.id === ci.id); if (p) p.stock -= ci.qty; });
                     
+                    // Update snapshot for today
+                    this.rollDay();
+
                     this.transactions.unshift({
                         type: `${type} PAYMENT`, amount: total, details: cartSnapshot.map(i => `${i.qty}x ${i.name}`).join(', '),
                         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: this.todayKey()
@@ -814,7 +879,6 @@
                     this.cart = [];
                     this.showToast(`Sale recorded! (${type})`, '✅');
 
-                    // Automatically send WhatsApp receipt if phone number was entered in basket
                     if (phoneSnapshot) {
                         this.customerPhone = phoneSnapshot;
                         this.sendReceiptWhatsApp(cartSnapshot, total, type);
@@ -830,6 +894,8 @@
                     this.dailyTotals.credit += total;
                     this.cart.forEach(ci => { const p = this.products.find(x => x.id === ci.id); if (p) p.stock -= ci.qty; });
                     
+                    this.rollDay();
+
                     this.transactions.unshift({
                         type: `CREDIT BOOK (${cust.name})`, amount: total, details: cust.lastItems,
                         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: this.todayKey()
@@ -866,6 +932,7 @@
                         this.products.push({ ...f, id: Date.now() });
                     }
                     this.save('ghana_shop_products', this.products);
+                    this.rollDay();
                     this.productModal.open = false;
                     this.showToast('Product saved!', '✅');
                 },
@@ -873,6 +940,7 @@
                     if (confirm('Delete this item?')) {
                         this.products = this.products.filter(p => p.id !== id);
                         this.save('ghana_shop_products', this.products);
+                        this.rollDay();
                     }
                 },
 
