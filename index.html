@@ -21,44 +21,50 @@
 
     <!-- SETUP MODAL FOR FIRST TIME SHOP OWNERS -->
     <div x-show="!shop.setupCompleted" x-cloak class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 border border-emerald-100">
-            <div class="text-center space-y-2">
-                <div class="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-inner">🏪</div>
-                <h2 class="text-2xl font-extrabold text-emerald-900">Ghana Provision POS Setup</h2>
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-emerald-100 max-h-[90vh] overflow-y-auto">
+            <div class="text-center space-y-1">
+                <div class="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center text-2xl mx-auto shadow-inner">🏪</div>
+                <h2 class="text-xl font-extrabold text-emerald-900">Ghana Provision POS Setup</h2>
                 <p class="text-xs text-slate-500">Configure your shop details to get started instantly.</p>
             </div>
             
-            <form @submit.prevent="completeSetup" class="space-y-4">
+            <form @submit.prevent="completeSetup" class="space-y-3">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Shop Name</label>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Shop Name</label>
                     <input type="text" x-model="shop.name" required placeholder="e.g. Nyame Dua Provisions" 
-                           class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm font-semibold">
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs font-semibold">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Location / Market</label>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Location / Market</label>
                     <input type="text" x-model="shop.location" required placeholder="e.g. Kaneshie Market, Accra" 
-                           class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm">
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Owner / Keeper Name</label>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Owner / Keeper Name</label>
                     <input type="text" x-model="shop.owner" required placeholder="e.g. Auntie Akosua" 
-                           class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm">
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1" x-text="shop.passwordHash ? 'New Password (leave blank to keep current)' : 'Shop Password'"></label>
-                    <input type="password" x-model="setupForm.password" autocomplete="new-password" :required="!shop.passwordHash" minlength="4" placeholder="At least 4 characters"
-                           class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm">
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Shop Password</label>
+                    <input type="password" x-model="setupForm.password" autocomplete="new-password" required minlength="4" placeholder="At least 4 characters"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Confirm Password</label>
-                    <input type="password" x-model="setupForm.confirm" autocomplete="new-password" :required="!shop.passwordHash" minlength="4" placeholder="Type the password again"
-                           class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm">
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Confirm Password</label>
+                    <input type="password" x-model="setupForm.confirm" autocomplete="new-password" required minlength="4" placeholder="Type the password again"
+                           class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-xs">
                 </div>
                 <p x-show="setupError" x-text="setupError" class="text-xs font-bold text-red-600"></p>
-                <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold py-3.5 rounded-2xl shadow-lg transition text-base">
+                <button type="submit" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold py-3 rounded-2xl shadow-lg transition text-sm">
                     Start Selling 🚀
                 </button>
             </form>
+
+            <div class="pt-2 border-t border-slate-100 text-center">
+                <button @click="openAdminLogin()" class="text-xs text-emerald-700 font-bold hover:underline">
+                    ⚙️ Open Master Admin Portal
+                </button>
+            </div>
         </div>
     </div>
 
@@ -90,7 +96,7 @@
                 <h3 class="font-extrabold text-slate-800 text-base">Master Admin Portal</h3>
                 <button @click="adminModal.open = false" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
             </div>
-            <p class="text-xs text-slate-500">Enter developer master password to access administrative controls.</p>
+            <p class="text-xs text-slate-500">Enter developer master passcode to access administrative controls.</p>
             <form @submit.prevent="verifyAdmin()" class="space-y-3">
                 <input type="password" x-model="adminModal.input" placeholder="Admin Passcode"
                        class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-sm text-center font-semibold">
@@ -126,6 +132,28 @@
                     <button @click="resetDevice()" class="w-full bg-red-100 text-red-700 hover:bg-red-200 font-bold p-3 rounded-xl">⚠️ Wipe Device & Re-register Shop</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- EXPENSE MODAL -->
+    <div x-show="expenseModal.open" x-cloak class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <h3 class="font-extrabold text-slate-800 text-base">Record Cash Expense</h3>
+            <p class="text-xs text-slate-500">Log cash taken out of the drawer today (e.g., pure water, transport).</p>
+            <form @submit.prevent="saveExpense()" class="space-y-3">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Expense Description</label>
+                    <input type="text" x-model="expenseModal.form.desc" required placeholder="e.g. Bought pure water & trotro" class="w-full px-3 py-2 rounded-xl border text-xs">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Amount (₵)</label>
+                    <input type="number" step="0.50" min="0" x-model.number="expenseModal.form.amount" required class="w-full px-3 py-2 rounded-xl border text-xs font-bold text-red-600">
+                </div>
+                <div class="flex items-center space-x-2 pt-2">
+                    <button type="button" @click="expenseModal.open = false" class="flex-1 bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="flex-1 bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-xs">Log Expense</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -272,10 +300,17 @@
             <div class="max-w-4xl mx-auto w-full space-y-5">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <div>
-                        <h2 class="font-extrabold text-slate-800 text-lg">Inventory & Price Control</h2>
-                        <p class="text-xs text-slate-500">Update prices and stock levels instantly.</p>
+                        <h2 class="font-extrabold text-slate-800 text-lg">Inventory & Stock Alerts</h2>
+                        <p class="text-xs text-slate-500">Manage prices and filter out-of-stock or low-stock items.</p>
                     </div>
-                    <button @click="openAddProductModal()" class="bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-800 transition shadow">+ Add New Product</button>
+                    <div class="flex items-center space-x-2">
+                        <button @click="inventoryFilter = inventoryFilter === 'LOW' ? 'ALL' : 'LOW'" 
+                                :class="inventoryFilter === 'LOW' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 border border-red-200'"
+                                class="px-3 py-2 rounded-xl text-xs font-bold transition shadow-sm">
+                            ⚠️ Low Stock Alert
+                        </button>
+                        <button @click="openAddProductModal()" class="bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-800 transition shadow">+ Add Product</button>
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -283,11 +318,11 @@
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
                                 <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
-                                    <th class="p-3">Icon</th><th class="p-3">Item Name</th><th class="p-3">Unit</th><th class="p-3">Price (GHS)</th><th class="p-3">Stock</th><th class="p-3 text-right">Actions</th>
+                                    <th class="p-3">Icon</th><th class="p-3">Item Name</th><th class="p-3">Unit</th><th class="p-3">Price (GHS)</th><th class="p-3">Stock Left</th><th class="p-3 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
-                                <template x-for="item in products" :key="item.id">
+                                <template x-for="item in filteredInventory" :key="item.id">
                                     <tr class="hover:bg-slate-50 transition">
                                         <td class="p-3 text-2xl" x-text="item.icon"></td>
                                         <td class="p-3 font-bold text-slate-800" x-text="item.name"></td>
@@ -313,7 +348,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <div>
                         <h2 class="font-extrabold text-slate-800 text-lg">Customer Credit Ledger</h2>
-                        <p class="text-xs text-slate-500">Track neighbor debts and settle payments.</p>
+                        <p class="text-xs text-slate-500">Track neighbor debts and send WhatsApp reminders.</p>
                     </div>
                     <div class="flex items-center space-x-3">
                         <div class="text-right">
@@ -332,7 +367,7 @@
                                     <div class="w-10 h-10 bg-emerald-100 text-emerald-800 font-extrabold rounded-full flex items-center justify-center text-sm" x-text="cust.name.substring(0,2).toUpperCase()"></div>
                                     <div>
                                         <h3 class="font-extrabold text-slate-800 text-sm" x-text="cust.name"></h3>
-                                        <p class="text-[11px] text-slate-500" x-text="cust.phone || 'No phone'"></p>
+                                        <p class="text-[11px] text-slate-500" x-text="cust.phone || 'No phone number'"></p>
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -345,7 +380,8 @@
                             </div>
                             <div class="flex items-center space-x-2 pt-1">
                                 <button @click="recordPayment(cust)" class="flex-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold py-2 rounded-xl text-xs transition">Receive Payment 💸</button>
-                                <button @click="deleteCustomer(cust.id)" class="text-slate-400 hover:text-red-600 text-xs px-3 py-2 font-semibold">Remove</button>
+                                <button @click="sendWhatsAppReminder(cust)" x-show="cust.debt > 0" class="bg-green-100 hover:bg-green-200 text-green-800 font-bold px-3 py-2 rounded-xl text-xs transition" title="Send WhatsApp Reminder">💬 WhatsApp</button>
+                                <button @click="deleteCustomer(cust.id)" class="text-slate-400 hover:text-red-600 text-xs px-2 py-2 font-semibold">Remove</button>
                             </div>
                         </div>
                     </template>
@@ -353,51 +389,59 @@
             </div>
         </section>
 
-        <!-- TAB: SALES REPORTS & ANALYTICS -->
+        <!-- TAB: SALES REPORTS & EXPENSES -->
         <section x-show="currentTab === 'reports'" class="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto bg-slate-50">
             <div class="max-w-4xl mx-auto w-full space-y-6">
                 <div class="bg-emerald-800 text-white p-6 rounded-3xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div class="space-y-1">
                         <div class="flex items-center space-x-2">
                             <span class="text-2xl">📈</span>
-                            <h2 class="text-xl font-extrabold">Sales Reports & Analytics</h2>
+                            <h2 class="text-xl font-extrabold">Sales Reports & Cash Drawer</h2>
                         </div>
-                        <p class="text-xs text-emerald-200">Generate, view, and export store revenue reports.</p>
+                        <p class="text-xs text-emerald-200">Reconcile cash drawer, log expenses, and export reports.</p>
                     </div>
-                    <button @click="exportReportCSV()" class="bg-white text-emerald-900 font-extrabold px-4 py-2.5 rounded-xl text-xs shadow hover:bg-emerald-50 transition">📥 Download Report (CSV)</button>
+                    <div class="flex items-center space-x-2">
+                        <button @click="openExpenseModal()" class="bg-amber-500 hover:bg-amber-600 text-white font-extrabold px-3 py-2.5 rounded-xl text-xs shadow transition">+ Log Expense 💸</button>
+                        <button @click="exportReportCSV()" class="bg-white text-emerald-900 font-extrabold px-3 py-2.5 rounded-xl text-xs shadow hover:bg-emerald-50 transition">📥 Download CSV</button>
+                    </div>
                 </div>
 
                 <!-- Summary Metric Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                    <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-1">
-                        <p class="text-[10px] text-slate-400 font-bold uppercase">Today's Cash</p>
-                        <p class="text-xl font-extrabold text-emerald-700">₵<span x-text="dailyTotals.cash.toFixed(2)"></span></p>
+                <div class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                    <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-1">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Cash Sales</p>
+                        <p class="text-lg font-extrabold text-emerald-700">₵<span x-text="dailyTotals.cash.toFixed(2)"></span></p>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-1">
-                        <p class="text-[10px] text-slate-400 font-bold uppercase">Today's MoMo</p>
-                        <p class="text-xl font-extrabold text-amber-600">₵<span x-text="dailyTotals.momo.toFixed(2)"></span></p>
+                    <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-1">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">MoMo Sales</p>
+                        <p class="text-lg font-extrabold text-amber-600">₵<span x-text="dailyTotals.momo.toFixed(2)"></span></p>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-1">
-                        <p class="text-[10px] text-slate-400 font-bold uppercase">Today's Credit</p>
-                        <p class="text-xl font-extrabold text-blue-600">₵<span x-text="dailyTotals.credit.toFixed(2)"></span></p>
+                    <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-1">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Expenses Paid</p>
+                        <p class="text-lg font-extrabold text-red-600">₵<span x-text="dailyTotals.expenses.toFixed(2)"></span></p>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-1">
-                        <p class="text-[10px] text-slate-400 font-bold uppercase">Total Revenue Today</p>
-                        <p class="text-xl font-extrabold text-slate-900">₵<span x-text="(dailyTotals.cash + dailyTotals.momo).toFixed(2)"></span></p>
+                    <div class="bg-white p-4 rounded-2xl border shadow-sm space-y-1">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase">Credit Issued</p>
+                        <p class="text-lg font-extrabold text-blue-600">₵<span x-text="dailyTotals.credit.toFixed(2)"></span></p>
+                    </div>
+                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 shadow-sm space-y-1">
+                        <p class="text-[10px] text-emerald-800 font-bold uppercase">Expected Drawer Cash</p>
+                        <p class="text-lg font-extrabold text-emerald-900">₵<span x-text="(dailyTotals.cash - dailyTotals.expenses).toFixed(2)"></span></p>
                     </div>
                 </div>
 
                 <!-- Filterable Transaction Log -->
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <h3 class="font-extrabold text-slate-800 text-sm">Full Transaction History</h3>
+                        <h3 class="font-extrabold text-slate-800 text-sm">Full Transaction & Expense History</h3>
                         <div class="flex items-center space-x-2 w-full sm:w-auto">
                             <span class="text-xs text-slate-500 font-bold">Filter:</span>
                             <select x-model="reportFilter" class="px-3 py-1.5 rounded-xl border text-xs bg-slate-50 font-semibold focus:outline-none">
-                                <option value="ALL">All Transactions</option>
+                                <option value="ALL">All Entries</option>
                                 <option value="TODAY">Today Only</option>
                                 <option value="CASH">Cash Only</option>
                                 <option value="MOMO">MoMo Only</option>
+                                <option value="EXPENSE">Expenses Only</option>
                                 <option value="CREDIT">Credit Book Only</option>
                             </select>
                         </div>
@@ -416,7 +460,7 @@
                                 </div>
                             </div>
                         </template>
-                        <div x-show="filteredTransactions.length === 0" class="text-center py-10 text-slate-400">No matching transactions found.</div>
+                        <div x-show="filteredTransactions.length === 0" class="text-center py-10 text-slate-400">No matching entries found.</div>
                     </div>
                 </div>
             </div>
@@ -487,7 +531,7 @@
                     <input type="text" x-model="customerModal.form.name" required placeholder="e.g. Auntie Efua" class="w-full px-3 py-2 rounded-xl border text-xs font-bold">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Phone Number</label>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Phone Number (Optional)</label>
                     <input type="text" x-model="customerModal.form.phone" placeholder="e.g. 0241234567" class="w-full px-3 py-2 rounded-xl border text-xs">
                 </div>
                 <div class="flex items-center space-x-2 pt-2">
@@ -505,6 +549,7 @@
                 currentTab: 'sales',
                 searchQuery: '',
                 reportFilter: 'ALL',
+                inventoryFilter: 'ALL',
                 toast: { show: false, message: '', icon: '✅' },
                 
                 shop: { name: '', location: '', owner: '', setupCompleted: false },
@@ -515,11 +560,12 @@
                 lockError: '',
 
                 adminModal: { open: false, input: '', error: '', authenticated: false },
+                expenseModal: { open: false, form: { desc: '', amount: 0 } },
 
                 products: [
-                    { id: 1, name: 'Ideal Milk Tin', unit: 'Tin', price: 12.00, stock: 48, icon: '🥛' },
+                    { id: 1, name: 'Ideal Milk Tin', unit: 'Tin', price: 12.00, stock: 4, icon: '🥛' },
                     { id: 2, name: 'Milo Refill Sachet', unit: 'Sachet', price: 3.50, stock: 90, icon: '🍫' },
-                    { id: 3, name: 'Geisha Mackerel', unit: 'Tin', price: 18.00, stock: 24, icon: '🐟' },
+                    { id: 3, name: 'Geisha Mackerel', unit: 'Tin', price: 18.00, stock: 3, icon: '🐟' },
                     { id: 4, name: 'Key Soap Large', unit: 'Bar', price: 10.00, stock: 35, icon: '🧼' }
                 ],
                 cart: [],
@@ -527,7 +573,7 @@
                     { id: 1, name: 'Auntie Ama', phone: '0241112233', debt: 45.00, lastItems: 'Ideal Milk' }
                 ],
                 transactions: [],
-                dailyTotals: { date: '', cash: 0.00, momo: 0.00, credit: 0.00 },
+                dailyTotals: { date: '', cash: 0.00, momo: 0.00, credit: 0.00, expenses: 0.00 },
 
                 productModal: { open: false, isEdit: false, form: { id: null, name: '', unit: '', price: 0, stock: 0, icon: '📦' } },
                 customerModal: { open: false, form: { name: '', phone: '' } },
@@ -553,7 +599,7 @@
                 rollDay() {
                     const today = this.todayKey();
                     if (this.dailyTotals.date !== today) {
-                        this.dailyTotals = { date: today, cash: 0, momo: 0, credit: 0 };
+                        this.dailyTotals = { date: today, cash: 0, momo: 0, credit: 0, expenses: 0 };
                         this.save('ghana_shop_totals', this.dailyTotals);
                     }
                 },
@@ -562,6 +608,10 @@
                 get filteredProducts() {
                     if (!this.searchQuery) return this.products;
                     return this.products.filter(p => p.name.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                },
+                get filteredInventory() {
+                    if (this.inventoryFilter === 'LOW') return this.products.filter(p => p.stock <= 5);
+                    return this.filteredProducts;
                 },
                 get cartTotal() { return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); },
                 get totalDebt() { return this.customers.reduce((sum, c) => sum + c.debt, 0); },
@@ -572,6 +622,7 @@
                         if (this.reportFilter === 'TODAY') return t.date === today;
                         if (this.reportFilter === 'CASH') return t.type.includes('CASH');
                         if (this.reportFilter === 'MOMO') return t.type.includes('MOMO');
+                        if (this.reportFilter === 'EXPENSE') return t.type.includes('EXPENSE');
                         if (this.reportFilter === 'CREDIT') return t.type.includes('CREDIT');
                         return true;
                     });
@@ -596,13 +647,39 @@
 
                 openAdminLogin() { this.adminModal.open = true; this.adminModal.input = ''; this.adminModal.error = ''; },
                 verifyAdmin() {
-                    // Master Admin passcode set to 'WISEADMIN2026' (you can change this to any passcode you like)
                     if (this.adminModal.input === 'WISEADMIN2026') {
                         this.adminModal.authenticated = true;
                         this.adminModal.error = '';
                     } else {
                         this.adminModal.error = 'Invalid Master Admin Passcode.';
                     }
+                },
+
+                openExpenseModal() { this.expenseModal.form = { desc: '', amount: 0 }; this.expenseModal.open = true; },
+                saveExpense() {
+                    this.rollDay();
+                    const f = this.expenseModal.form;
+                    if (!f.desc || f.amount <= 0) return;
+                    this.dailyTotals.expenses += f.amount;
+                    this.transactions.unshift({
+                        type: 'CASH EXPENSE', amount: f.amount, details: f.desc,
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), date: this.todayKey()
+                    });
+                    this.save('ghana_shop_txns', this.transactions);
+                    this.save('ghana_shop_totals', this.dailyTotals);
+                    this.expenseModal.open = false;
+                    this.showToast('Expense logged successfully!', '💸');
+                },
+
+                sendWhatsAppReminder(cust) {
+                    if (!cust.phone) {
+                        alert('No phone number saved for this customer.');
+                        return;
+                    }
+                    let cleanPhone = cust.phone.replace(/\D/g, '');
+                    if (cleanPhone.startsWith('0')) cleanPhone = '233' + cleanPhone.substring(1);
+                    const msg = encodeURIComponent(`Hello ${cust.name}, this is a gentle reminder from *${this.shop.name}* that your outstanding credit balance is *₵${cust.debt.toFixed(2)}*. Kindly arrange payment when possible. Thank you!`);
+                    window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
                 },
 
                 resetDevice() {
@@ -746,7 +823,6 @@
                 saveCustomer() {
                     this.customers.push({ id: Date.now(), ...this.customerModal.form, debt: 0, lastItems: 'None' });
                     this.save('ghana_shop_customers', this.customers);
-                    this.customerModal.open.false;
                     this.customerModal.open = false;
                     this.showToast('Customer added!', '👤');
                 },
