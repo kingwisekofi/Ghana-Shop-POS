@@ -315,11 +315,11 @@
 
         <!-- TAB: INVENTORY -->
         <section x-show="currentTab === 'inventory'" class="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto bg-slate-50">
-            <div class="max-w-4xl mx-auto w-full space-y-5">
+            <div class="max-w-5xl mx-auto w-full space-y-5">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <div>
-                        <h2 class="font-extrabold text-slate-800 text-lg">Inventory & Stock Alerts</h2>
-                        <p class="text-xs text-slate-500">Manage cost prices, selling prices, and stock levels.</p>
+                        <h2 class="font-extrabold text-slate-800 text-lg">Inventory (40 Items) & Stock Alerts</h2>
+                        <p class="text-xs text-slate-500">Directly edit item names, cost prices, selling prices, and stock below.</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <button @click="inventoryFilter = inventoryFilter === 'LOW' ? 'ALL' : 'LOW'" 
@@ -341,7 +341,7 @@
                                     <th class="p-3">Unit</th>
                                     <th class="p-3">Cost Price (₵)</th>
                                     <th class="p-3">Selling Price (₵)</th>
-                                    <th class="p-3">Stock Left</th>
+                                    <th class="p-3">Stock</th>
                                     <th class="p-3 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -349,11 +349,11 @@
                                 <template x-for="item in filteredInventory" :key="item.id">
                                     <tr class="hover:bg-slate-50 transition">
                                         <td class="p-3 text-2xl" x-text="item.icon"></td>
-                                        <td class="p-3 font-bold text-slate-800" x-text="item.name"></td>
-                                        <td class="p-3 text-slate-500" x-text="item.unit"></td>
-                                        <td class="p-3"><div class="flex items-center space-x-1"><span class="font-bold text-slate-600">₵</span><input type="number" step="0.50" min="0" x-model.number="item.costPrice" @change="saveInventory()" class="w-20 px-2 py-1 rounded-lg border font-semibold text-slate-600"></div></td>
-                                        <td class="p-3"><div class="flex items-center space-x-1"><span class="font-bold text-slate-600">₵</span><input type="number" step="0.50" min="0" x-model.number="item.price" @change="saveInventory()" class="w-20 px-2 py-1 rounded-lg border font-extrabold text-emerald-800"></div></td>
-                                        <td class="p-3"><input type="number" min="0" x-model.number="item.stock" @change="saveInventory()" class="w-16 px-2 py-1 rounded-lg border font-bold"></td>
+                                        <td class="p-3"><input type="text" x-model="item.name" @change="saveInventory()" class="w-full px-2 py-1 rounded-lg border font-bold text-slate-800 bg-white"></td>
+                                        <td class="p-3"><input type="text" x-model="item.unit" @change="saveInventory()" class="w-20 px-2 py-1 rounded-lg border text-slate-600 bg-white"></td>
+                                        <td class="p-3"><div class="flex items-center space-x-1"><span class="font-bold text-slate-600">₵</span><input type="number" step="0.50" min="0" x-model.number="item.costPrice" @change="saveInventory()" class="w-20 px-2 py-1 rounded-lg border font-semibold text-slate-600 bg-white"></div></td>
+                                        <td class="p-3"><div class="flex items-center space-x-1"><span class="font-bold text-slate-600">₵</span><input type="number" step="0.50" min="0" x-model.number="item.price" @change="saveInventory()" class="w-20 px-2 py-1 rounded-lg border font-extrabold text-emerald-800 bg-white"></div></td>
+                                        <td class="p-3"><input type="number" min="0" x-model.number="item.stock" @change="saveInventory()" class="w-16 px-2 py-1 rounded-lg border font-bold bg-white"></td>
                                         <td class="p-3 text-right space-x-2">
                                             <button @click="editProduct(item)" class="text-blue-600 hover:underline font-semibold">Edit</button>
                                             <button @click="deleteProduct(item.id)" class="text-red-600 hover:underline font-semibold">Delete</button>
@@ -639,10 +639,46 @@
                 expenseModal: { open: false, form: { desc: '', amount: 0 } },
 
                 products: [
-                    { id: 1, name: 'Ideal Milk Tin', unit: 'Tin', costPrice: 10.00, price: 12.00, stock: 4, icon: '🥛' },
-                    { id: 2, name: 'Milo Refill Sachet', unit: 'Sachet', costPrice: 2.50, price: 3.50, stock: 90, icon: '🍫' },
-                    { id: 3, name: 'Geisha Mackerel', unit: 'Tin', costPrice: 15.00, price: 18.00, stock: 3, icon: '🐟' },
-                    { id: 4, name: 'Key Soap Large', unit: 'Bar', costPrice: 8.00, price: 10.00, stock: 35, icon: '🧼' }
+                    { id: 1, name: 'Ideal Milk Tin', unit: 'Tin', costPrice: 10.00, price: 12.00, stock: 24, icon: '🥛' },
+                    { id: 2, name: 'Milo Refill Sachet', unit: 'Sachet', costPrice: 2.50, price: 3.50, stock: 50, icon: '🍫' },
+                    { id: 3, name: 'Geisha Mackerel', unit: 'Tin', costPrice: 15.00, price: 18.00, stock: 15, icon: '🐟' },
+                    { id: 4, name: 'Key Soap Large', unit: 'Bar', costPrice: 8.00, price: 10.00, stock: 30, icon: '🧼' },
+                    { id: 5, name: 'Frytol Vegetable Oil', unit: 'Bottle', costPrice: 35.00, price: 42.00, stock: 10, icon: '🍾' },
+                    { id: 6, name: 'Pepsodent Toothpaste', unit: 'Tube', costPrice: 12.00, price: 15.00, stock: 20, icon: '🪥' },
+                    { id: 7, name: 'Indomie Instant Noodles', unit: 'Pack', costPrice: 4.00, price: 5.50, stock: 80, icon: '🍜' },
+                    { id: 8, name: 'Club Beer', unit: 'Bottle', costPrice: 10.00, price: 13.00, stock: 40, icon: '🍺' },
+                    { id: 9, name: 'Malt Drink (Malta Guinness)', unit: 'Can', costPrice: 8.00, price: 10.00, stock: 35, icon: '🥤' },
+                    { id: 10, name: 'Coca Cola', unit: 'Bottle', costPrice: 6.00, price: 8.00, stock: 48, icon: '🥤' },
+                    { id: 11, name: 'Fan Milk (FanIce)', unit: 'Sachet', costPrice: 4.00, price: 6.00, stock: 25, icon: '🍨' },
+                    { id: 12, name: 'Kasere Tomato Paste', unit: 'Sachet', costPrice: 2.00, price: 3.00, stock: 60, icon: '🍅' },
+                    { id: 13, name: 'Sunny Quality Rice', unit: 'Bowl', costPrice: 15.00, price: 18.00, stock: 50, icon: '🍚' },
+                    { id: 14, name: 'Ghana Gari', unit: 'Bowl', costPrice: 8.00, price: 10.00, stock: 40, icon: '🌾' },
+                    { id: 15, name: 'Local Beans (Adua)', unit: 'Bowl', costPrice: 12.00, price: 15.00, stock: 30, icon: '🫘' },
+                    { id: 16, name: 'Orijin Bitters', unit: 'Bottle', costPrice: 12.00, price: 16.00, stock: 20, icon: '🥃' },
+                    { id: 17, name: 'Alomo Bitters', unit: 'Bottle', costPrice: 12.00, price: 15.00, stock: 18, icon: '🌿' },
+                    { id: 18, name: 'Lipton Yellow Label Tea', unit: 'Box', costPrice: 18.00, price: 22.00, stock: 12, icon: '🍵' },
+                    { id: 19, name: 'Cowbell Coffee', unit: 'Sachet', costPrice: 1.50, price: 2.50, stock: 100, icon: '☕' },
+                    { id: 20, name: 'Nido Milk Powder', unit: 'Sachet', costPrice: 3.50, price: 5.00, stock: 60, icon: '🥛' },
+                    { id: 21, name: 'Cerelac Infant Cereal', unit: 'Tin', costPrice: 32.00, price: 38.00, stock: 10, icon: '👶' },
+                    { id: 22, name: 'Royco Cube (Maggi)', unit: 'Pack', costPrice: 6.00, price: 8.00, stock: 40, icon: '🧊' },
+                    { id: 23, name: 'Bonite Sardine', unit: 'Tin', costPrice: 12.00, price: 15.00, stock: 22, icon: '🐟' },
+                    { id: 24, name: 'Tasty Tom Tomato Mix', unit: 'Tin', costPrice: 7.00, price: 9.00, stock: 25, icon: '🍅' },
+                    { id: 25, name: 'Top Tea', unit: 'Box', costPrice: 15.00, price: 18.00, stock: 14, icon: '🫖' },
+                    { id: 26, name: 'Castle Milk Stout', unit: 'Bottle', costPrice: 11.00, price: 14.00, stock: 24, icon: '🍻' },
+                    { id: 27, name: 'Smirnoff Ice', unit: 'Bottle', costPrice: 13.00, price: 17.00, stock: 20, icon: '🍸' },
+                    { id: 28, name: 'Voltic Mineral Water', unit: 'Bottle', costPrice: 3.50, price: 5.00, stock: 50, icon: '💧' },
+                    { id: 29, name: 'Pure Water (Sachet Water)', unit: 'Bag', costPrice: 4.00, price: 6.00, stock: 30, icon: '💧' },
+                    { id: 30, name: 'EpPso Salt / Epsom', unit: 'Pack', costPrice: 5.00, price: 7.00, stock: 15, icon: '🧂' },
+                    { id: 31, name: 'Parazone Bleach', unit: 'Bottle', costPrice: 10.00, price: 13.00, stock: 18, icon: '🧴' },
+                    { id: 32, name: 'Geisha Soap', unit: 'Bar', costPrice: 6.00, price: 8.00, stock: 35, icon: '🧼' },
+                    { id: 33, name: 'Protex Soap', unit: 'Bar', costPrice: 8.00, price: 10.00, stock: 28, icon: '🧼' },
+                    { id: 34, name: 'Guardian Soap', unit: 'Bar', costPrice: 7.50, price: 10.00, stock: 25, icon: '🧼' },
+                    { id: 35, name: 'Omo Washing Powder', unit: 'Sachet', costPrice: 3.00, price: 4.50, stock: 50, icon: '🌀' },
+                    { id: 36, name: 'Ariel Detergent', unit: 'Sachet', costPrice: 3.50, price: 5.00, stock: 45, icon: '✨' },
+                    { id: 37, name: 'Long Rich Mosquito Coil', unit: 'Packet', costPrice: 5.00, price: 7.00, stock: 40, icon: '🦟' },
+                    { id: 38, name: 'Bic Disposable Razor', unit: 'Piece', costPrice: 2.00, price: 3.50, stock: 50, icon: '🪒' },
+                    { id: 39, name: 'Ghana Sugar', unit: 'Bowl', costPrice: 12.00, price: 15.00, stock: 25, icon: '🍬' },
+                    { id: 40, name: 'Ghana Salt', unit: 'Bowl', costPrice: 5.00, price: 7.00, stock: 30, icon: '🧂' }
                 ],
                 cart: [],
                 customers: [
@@ -873,7 +909,7 @@
                 saveInventory() { 
                     this.save('ghana_shop_products', this.products); 
                     this.rollDay();
-                    this.showToast('Inventory saved', '💾'); 
+                    this.showToast('Inventory updated', '💾'); 
                 },
 
                 addToCart(product) {
@@ -891,7 +927,6 @@
                     this.rollDay();
                     const total = this.cartTotal;
                     
-                    // Calculate profit for this cart
                     let totalProfit = 0;
                     this.cart.forEach(ci => {
                         const originalProd = this.products.find(p => p.id === ci.id);
