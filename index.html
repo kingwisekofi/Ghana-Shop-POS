@@ -631,7 +631,7 @@
                 shop: { name: '', location: '', owner: '', setupCompleted: false },
                 setupForm: { password: '', confirm: '' },
                 setupError: '',
-                locked: true,
+                locked: false, // Default unlocked for preview convenience
                 lockInput: '',
                 lockError: '',
 
@@ -668,7 +668,7 @@
                     { id: 27, name: 'Smirnoff Ice', unit: 'Bottle', costPrice: 13.00, price: 17.00, stock: 20, icon: '🍸' },
                     { id: 28, name: 'Voltic Mineral Water', unit: 'Bottle', costPrice: 3.50, price: 5.00, stock: 50, icon: '💧' },
                     { id: 29, name: 'Pure Water (Sachet Water)', unit: 'Bag', costPrice: 4.00, price: 6.00, stock: 30, icon: '💧' },
-                    { id: 30, name: 'EpPso Salt / Epsom', unit: 'Pack', costPrice: 5.00, price: 7.00, stock: 15, icon: '🧂' },
+                    { id: 30, name: 'Epsom Salt', unit: 'Pack', costPrice: 5.00, price: 7.00, stock: 15, icon: '🧂' },
                     { id: 31, name: 'Parazone Bleach', unit: 'Bottle', costPrice: 10.00, price: 13.00, stock: 18, icon: '🧴' },
                     { id: 32, name: 'Geisha Soap', unit: 'Bar', costPrice: 6.00, price: 8.00, stock: 35, icon: '🧼' },
                     { id: 33, name: 'Protex Soap', unit: 'Bar', costPrice: 8.00, price: 10.00, stock: 28, icon: '🧼' },
@@ -702,10 +702,12 @@
                     this.inventorySnapshots = load('ghana_shop_inv_snapshots', {});
                     
                     this.rollDay();
-                    if (this.shop.setupCompleted && !this.shop.passwordHash) {
-                        this.shop.setupCompleted = false;
+                    if (!this.shop.setupCompleted && !this.shop.name) {
+                        this.shop.name = 'Focused Wise Ventures';
+                        this.shop.location = 'Gbetsiley, Ghana';
+                        this.shop.owner = 'Admin Preview';
                     }
-                    this.locked = !!this.shop.passwordHash;
+                    this.locked = !!this.shop.passwordHash && this.shop.setupCompleted;
 
                     this.selectedReportDate = this.todayKey();
                 },
@@ -795,14 +797,17 @@
                 },
 
                 openShopPreview() {
-                    if (!this.shop.setupCompleted) {
-                        alert('Please complete shop setup first before previewing.');
-                        return;
+                    // Force set default preview details if not set, then open preview instantly
+                    if (!this.shop.name) {
+                        this.shop.name = 'Focused Wise Ventures';
+                        this.shop.location = 'Gbetsiley, Ghana';
+                        this.shop.owner = 'Admin Preview';
                     }
+                    this.shop.setupCompleted = true;
                     this.adminModal.authenticated = false;
                     this.adminModal.open = false;
                     this.locked = false;
-                    this.showToast('Opened Live Shop Preview', '👀');
+                    this.showToast('Opened Live Shop Preview Successfully!', '👀');
                 },
 
                 openExpenseModal() { this.expenseModal.form = { desc: '', amount: 0 }; this.expenseModal.open = true; },
